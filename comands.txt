@@ -1,0 +1,7 @@
+python -m venv .venv
+.venv\Scripts\activate
+deactivate
+
+uvicorn main:app --reload
+
+pip freeze > requirements.txt # atualizar os requirements.txt
