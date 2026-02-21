@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine, Column, String, Integer, Boolean, Float, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy_utils.types import ChoiceType
+from main import DATABASE_URL
 
 # cria a conexão com o banco
-db = create_engine("sqlite:///banco.db") #link do banco de dados
+# db = create_engine(DATABASE_URL) #link do banco de dados
 
 # cria a base do banco de dados
 Base = declarative_base()
