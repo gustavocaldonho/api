@@ -111,6 +111,8 @@ async def finalizar_pedido(id_pedido: int, session: Session = Depends(pegar_sess
 @order_router.get("/pedido/{id_pedido}")
 async def visualiar_pedido(id_pedido: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     pedido = session.query(Pedido).filter(Pedido.id==id_pedido).first()
+    pedido.calcular_preco()
+    print("Preco calculado", pedido.preco)
     if not pedido:
         raise HTTPException(status_code=400, detail="Pedido não encontrado")
     if not usuario.admin and usuario.id != pedido.usuario:

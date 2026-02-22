@@ -1,16 +1,24 @@
 from fastapi import Depends, HTTPException
 from main import SECRET_KEY, ALGORITHM, oauth2_schema
-from models import db, Usuario
+from models import Usuario
 from sqlalchemy.orm import sessionmaker, Session
 from jose import jwt, JWTError
+from database import SessionLocal
+
+# def pegar_sessao():
+#     try:
+#         Session = sessionmaker(bind=db)
+#         session = Session() # generator
+#         yield session # pega a sessao e retorna sem encerrar a funcao, porque precisa encessar a sessao
+#     finally:
+#         session.close()
 
 def pegar_sessao():
+    db = SessionLocal()
     try:
-        Session = sessionmaker(bind=db)
-        session = Session() # generator
-        yield session # pega a sessao e retorna sem encerrar a funcao, porque precisa encessar a sessao
+        yield db
     finally:
-        session.close()
+        db.close()
 
 # toda rota que exija usuarios autorizados, deve ser passado a dependencia verificar_token
 def verificar_token(token : str = Depends(oauth2_schema), session: Session = Depends(pegar_sessao)):
