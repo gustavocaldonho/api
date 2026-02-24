@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependecies import pegar_sessao, verificar_token
 from schemas import PedidoSchema, ItemPedidoSchema, ResponsePedidoSchema
-from models import Pedido, Usuario, ItemPedido
+from models.models import Pedido, Usuario, ItemPedido
 from typing import List
 
 # dependencies=[Depends(verificar_token)] -> obriga todas as rotas de pedido receberem um usuario autenticado, 

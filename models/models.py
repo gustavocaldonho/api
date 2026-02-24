@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Boolean, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils.types import ChoiceType
 from database import Base
+
 class Usuario(Base):
     __tablename__ = "usuarios"
 

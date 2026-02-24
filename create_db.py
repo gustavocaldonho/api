@@ -1,4 +1,4 @@
-from models import db, Base
+from models.models import db, Base
 
 def criar_banco():
     # Cria todas as tabelas no banco

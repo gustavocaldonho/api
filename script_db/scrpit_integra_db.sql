@@ -235,8 +235,8 @@ CREATE TABLE IF NOT EXISTS public.recebimentos
 CREATE TABLE IF NOT EXISTS public.usuarios
 (
     empresa_id integer NOT NULL,
-    #usuario character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    #senha character varying(50) COLLATE pg_catalog."default",
+    usuario character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    senha character varying(50) COLLATE pg_catalog."default",
     vendedor_id integer NOT NULL,
     consultar_pessoas character varying(1) COLLATE pg_catalog."default",
     consultar_itens character varying(1) COLLATE pg_catalog."default",
@@ -245,10 +245,10 @@ CREATE TABLE IF NOT EXISTS public.usuarios
     efetuar_pre_vendas character varying(1) COLLATE pg_catalog."default",
     data_registro timestamp(0) without time zone,
     consultar_pagamentos character varying(1) COLLATE pg_catalog."default",
-    #desconto_maximo numeric(4,2),
+    desconto_maximo numeric(4,2),
     digitar_preco_venda character varying(1) COLLATE pg_catalog."default",
     gerar_gordura_precos character varying(1) COLLATE pg_catalog."default",
-    #total_gordura numeric(10,2),
+    total_gordura numeric(10,2),
     CONSTRAINT usuarios_idx PRIMARY KEY (empresa_id, usuario)
 )
 

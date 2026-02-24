@@ -43,3 +43,14 @@ class ResponsePedidoSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+class VendedorSchema(BaseModel):
+    vendedor_id: int
+    usuario: str
+
+    class Config:
+        from_attributes = True
+
+class ResponseVisualizarVendedoresSchema(BaseModel):
+    cnpj_empresa: str
+    vendedores: List[VendedorSchema]

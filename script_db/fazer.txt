@@ -1,0 +1,5 @@
+- Criar os modelos das tabelas (em models.py) e fazer as rotas para permitir login 
+
+- criar uma rota que recolhe o CNPJ, verifica se ele tem o celular ativo e retorna a lista de vendedores. (ok)
+
+- criar uma rota para autenticação do vendedor (usuário)

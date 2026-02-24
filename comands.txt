@@ -11,5 +11,6 @@ pip freeze > requirements.txt                               # atualizar os requi
 # migrar o banco de dados (toda vez que algum model tiver 
 os atributos (colunas) modificados/alterados/adicionados/deletados)
 
-alembic revision --autogenerate - m "Nome da migração"      # criar a migração
-alembic upgrade head                                        # executar a migração 
+alembic revision --autogenerate -m "Nome da migração"      # criar a migração
+alembic upgrade head                                       # executar a migração 
+alembic history                                            # visualiza o histórico de migrações

@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
-from models import Usuario
+from models.models import Usuario
+from models.empresas import Empresas
+from models.usuarios_integra import Usuarios_Integra
 from dependecies import pegar_sessao, verificar_token
 from main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from schemas import UsuarioSchema, LoginSchema
+from schemas import UsuarioSchema, LoginSchema, ResponseVisualizarVendedoresSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
+from typing import List
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,6 +33,23 @@ async def home():
     Essa é a rota padrão de autenticação do nosso sistema.
     """
     return {"mensagem": "Você acessou a rota padrão de autenticação", "autenticado": False}
+
+@auth_router.get("/cnpj/visualizar_vendedores/{cnpj}", response_model=ResponseVisualizarVendedoresSchema)
+async def visualizar_vendedores(cnpj_empresa: str, session: Session = Depends(pegar_sessao)):
+    # busca as informacoes da empresa no banco
+    empresa = session.query(Empresas).filter(Empresas.empresa_cnpj==cnpj_empresa).first() # retorna uma linha do banco de dados com todas as informações da empresa
+    # verifica se existe a empresa e se tem o aplicativo habilitado
+    if not empresa:
+        raise HTTPException(status_code=400, detail="CNPJ não encontrado")
+    elif not empresa.celular_ativo:
+        raise HTTPException(status_code=400, detail="O aplicativo não está habilitado para a referida empresa")
+    else:
+        # retorna a lista de vendedores da empresa
+        vendedores = session.query(Usuarios_Integra).filter(Usuarios_Integra.empresa_id==empresa.id).all()
+        return {
+            "cnpj_empresa": cnpj_empresa,
+            "vendedores": vendedores
+        }
 
 @auth_router.post("/criar_conta")
 async def criar_conta(usuario_schema: UsuarioSchema, session: Session = Depends(pegar_sessao)):
