@@ -36,10 +36,12 @@ async def home():
     """
     return {"mensagem": "Você acessou a rota padrão de autenticação", "autenticado": False}
 
-@auth_router.get("/cnpj/visualizar_vendedores/{cnpj}", response_model=ResponseVisualizarVendedoresSchema)
-async def visualizar_vendedores(cnpj_empresa: str, session: Session = Depends(pegar_sessao)):
+# o ideal seria usar um método get, porém, os cnpjs estão formatadados, logo, não podem ser enviados via (path) url
+# uma vez que as "/" do cnpj acessam a rota incorreta. 
+@auth_router.post("/visualizar_vendedores", response_model=ResponseVisualizarVendedoresSchema)
+async def visualizar_vendedores(cnpj: str, session: Session = Depends(pegar_sessao)):
     # busca as informacoes da empresa no banco
-    empresa = session.query(Empresas).filter(Empresas.empresa_cnpj==cnpj_empresa).first() # retorna uma linha do banco de dados com todas as informações da empresa
+    empresa = session.query(Empresas).filter(Empresas.empresa_cnpj==cnpj).first() # retorna uma linha do banco de dados com todas as informações da empresa
     # verifica se existe a empresa e se tem o aplicativo habilitado
     if not empresa:
         raise HTTPException(status_code=400, detail="CNPJ não encontrado")
