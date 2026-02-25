@@ -18,8 +18,16 @@ class PedidoSchema(BaseModel):
     class Config:
         from_attributes = True 
 
+# class LoginSchema(BaseModel):
+#     email: str
+#     senha: str
+
+#     class Config:
+#         from_attributes = True
+
 class LoginSchema(BaseModel):
-    email: str
+    empresa_id: int
+    usuario: str
     senha: str
 
     class Config:
@@ -52,5 +60,5 @@ class VendedorSchema(BaseModel):
         from_attributes = True
 
 class ResponseVisualizarVendedoresSchema(BaseModel):
-    cnpj_empresa: str
+    id_empresa: int
     vendedores: List[VendedorSchema]

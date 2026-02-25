@@ -19,11 +19,14 @@ def criar_token(id_usuario, duracao_token=timedelta(minutes=ACCESS_TOKEN_EXPIRE_
     jwt_codificado = jwt.encode(dic_info, SECRET_KEY, ALGORITHM)
     return jwt_codificado
 
-def autenticar_usuario(email, senha, session):
-    usuario = session.query(Usuario).filter(Usuario.email==email).first()
+def autenticar_usuario(empresa_id_param, usuario_param, senha_param, session):
+    usuario = session.query(Usuarios_Integra).filter(Usuarios_Integra.empresa_id==empresa_id_param, 
+                                                     Usuarios_Integra.usuario==usuario_param).first()
+    print(usuario.usuario, usuario.vendedor_id)
     if not usuario:
         return False
-    elif not bcrypt_context.verify(senha, usuario.senha): # verifica se a senha passada é igual a senha que esta no db. Retorna True ou False
+    # elif not bcrypt_context.verify(senha, usuario.senha):
+    elif not usuario.senha == senha_param: # verifica se a senha passada é igual a senha que esta no db. Retorna True ou False
         return False
     return usuario
 
@@ -47,7 +50,7 @@ async def visualizar_vendedores(cnpj_empresa: str, session: Session = Depends(pe
         # retorna a lista de vendedores da empresa
         vendedores = session.query(Usuarios_Integra).filter(Usuarios_Integra.empresa_id==empresa.id).all()
         return {
-            "cnpj_empresa": cnpj_empresa,
+            "id_empresa": empresa.id,
             "vendedores": vendedores
         }
 
@@ -67,12 +70,12 @@ async def criar_conta(usuario_schema: UsuarioSchema, session: Session = Depends(
     
 @auth_router.post("/login")
 async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sessao)):
-    usuario = autenticar_usuario(login_schema.email, login_schema.senha, session)
+    usuario = autenticar_usuario(login_schema.empresa_id, login_schema.usuario, login_schema.senha, session)
     if not usuario:
         raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais inválidas")
     else:
-        access_token = criar_token(usuario.id)
-        refresh_token = criar_token(usuario.id, duracao_token=timedelta(days=7))
+        access_token = criar_token(usuario.vendedor_id)
+        refresh_token = criar_token(usuario.vendedor_id, duracao_token=timedelta(days=7))
         return {
             "access_token": access_token,
             "refresh_token": refresh_token, # apos 7 dias pede email e senha de novo
