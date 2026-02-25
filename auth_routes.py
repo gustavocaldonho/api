@@ -22,7 +22,6 @@ def criar_token(id_usuario, duracao_token=timedelta(minutes=ACCESS_TOKEN_EXPIRE_
 def autenticar_usuario(empresa_id_param, usuario_param, senha_param, session):
     usuario = session.query(Usuarios_Integra).filter(Usuarios_Integra.empresa_id==empresa_id_param, 
                                                      Usuarios_Integra.usuario==usuario_param).first()
-    print(usuario.usuario, usuario.vendedor_id)
     if not usuario:
         return False
     # elif not bcrypt_context.verify(senha, usuario.senha):
