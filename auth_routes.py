@@ -10,6 +10,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
+from utils.utils import limpar_cnpj, formatar_cnpj
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -36,12 +37,14 @@ async def home():
     """
     return {"mensagem": "Você acessou a rota padrão de autenticação", "autenticado": False}
 
-# o ideal seria usar um método get, porém, os cnpjs estão formatadados, logo, não podem ser enviados via (path) url
-# uma vez que as "/" do cnpj acessam a rota incorreta. 
-@auth_router.post("/visualizar_vendedores", response_model=ResponseVisualizarVendedoresSchema)
+# rota para verificar se a empresa possui o aplicativo habilitado e os vendedores cadastrados,
+# a fim de permitir o login dos vendedores ao acessar o app.
+@auth_router.get("/visualizar_vendedores/{cnpj}", response_model=ResponseVisualizarVendedoresSchema)
 async def visualizar_vendedores(cnpj: str, session: Session = Depends(pegar_sessao)):
+    # recebe o cnpj desformatado e busca no banco o cnpj formatado
+    cnpj_formatado = formatar_cnpj(cnpj)
     # busca as informacoes da empresa no banco
-    empresa = session.query(Empresas).filter(Empresas.empresa_cnpj==cnpj).first() # retorna uma linha do banco de dados com todas as informações da empresa
+    empresa = session.query(Empresas).filter(Empresas.empresa_cnpj==cnpj_formatado).first() # retorna uma linha do banco de dados com todas as informações da empresa
     # verifica se existe a empresa e se tem o aplicativo habilitado
     if not empresa:
         raise HTTPException(status_code=400, detail="CNPJ não encontrado")
