@@ -3,12 +3,9 @@ venv/
 env/
 ENV/
 .env/
-<<<<<<< HEAD
-=======
 
 # Ignorar cache do Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
->>>>>>> banco_integra
