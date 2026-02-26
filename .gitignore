@@ -4,4 +4,8 @@ env/
 ENV/
 .env/
 
-__pycache__
+# Ignorar cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
