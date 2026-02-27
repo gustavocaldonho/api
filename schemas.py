@@ -61,4 +61,5 @@ class VendedorSchema(BaseModel):
 
 class ResponseVisualizarVendedoresSchema(BaseModel):
     id_empresa: int
+    nome_empresa: str
     vendedores: List[VendedorSchema]

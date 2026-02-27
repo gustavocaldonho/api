@@ -55,6 +55,7 @@ async def visualizar_vendedores(cnpj: str, session: Session = Depends(pegar_sess
         vendedores = session.query(Usuarios_Integra).filter(Usuarios_Integra.empresa_id==empresa.id).all()
         return {
             "id_empresa": empresa.id,
+            "nome_empresa": empresa.nome,
             "vendedores": vendedores
         }
 
