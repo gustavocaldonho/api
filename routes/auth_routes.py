@@ -59,19 +59,19 @@ async def visualizar_vendedores(cnpj: str, session: Session = Depends(pegar_sess
             "vendedores": vendedores
         }
 
-@auth_router.post("/criar_conta")
-async def criar_conta(usuario_schema: UsuarioSchema, session: Session = Depends(pegar_sessao)):
-    usuario = session.query(Usuario).filter(Usuario.email==usuario_schema.email).first() # consulta no db
-    if usuario:
-        # ja existe um usuario com esse email
-        # return {"mensagem": "já existe um usuário com esse email"}
-        raise HTTPException(status_code=400, detail="E-mail do usuário já cadastrado")
-    else:
-        senha_cryptografada = bcrypt_context.hash(usuario_schema.senha)
-        novo_usuario = Usuario(usuario_schema.nome, usuario_schema.email, senha_cryptografada, usuario_schema.ativo, usuario_schema.admin)
-        session.add(novo_usuario)
-        session.commit()
-        return {"mensagem": f"usuário cadastrado com sucesso {usuario_schema.email}"}
+# @auth_router.post("/criar_conta")
+# async def criar_conta(usuario_schema: UsuarioSchema, session: Session = Depends(pegar_sessao)):
+#     usuario = session.query(Usuario).filter(Usuario.email==usuario_schema.email).first() # consulta no db
+#     if usuario:
+#         # ja existe um usuario com esse email
+#         # return {"mensagem": "já existe um usuário com esse email"}
+#         raise HTTPException(status_code=400, detail="E-mail do usuário já cadastrado")
+#     else:
+#         senha_cryptografada = bcrypt_context.hash(usuario_schema.senha)
+#         novo_usuario = Usuario(usuario_schema.nome, usuario_schema.email, senha_cryptografada, usuario_schema.ativo, usuario_schema.admin)
+#         session.add(novo_usuario)
+#         session.commit()
+#         return {"mensagem": f"usuário cadastrado com sucesso {usuario_schema.email}"}
     
 @auth_router.post("/login")
 async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sessao)):
@@ -89,22 +89,22 @@ async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sess
 
 # rota para permitir testar as rotas com cadeado diretamente na docs do fastapi, uma vez que toda rota com cadeado exige um token 
 # no header (Authorization) e, esse header não é possível colocar diretamente na docs
-@auth_router.post("/login-form")
-async def login_form(dados_formulario: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(pegar_sessao)):
-    usuario = autenticar_usuario(dados_formulario.username, dados_formulario.password, session)
-    if not usuario:
-        raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais inválidas")
-    else:
-        access_token = criar_token(usuario.id)
-        return {
-            "access_token": access_token,
-            "token_type": "Bearer"
-        } 
+# @auth_router.post("/login-form")
+# async def login_form(dados_formulario: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(pegar_sessao)):
+#     usuario = autenticar_usuario(dados_formulario.username, dados_formulario.password, session)
+#     if not usuario:
+#         raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais inválidas")
+#     else:
+#         access_token = criar_token(usuario.id)
+#         return {
+#             "access_token": access_token,
+#             "token_type": "Bearer"
+#         } 
     
-@auth_router.get("/refresh")
-async def use_refresh_token(usuario: Usuario = Depends(verificar_token)):
-    access_token = criar_token(usuario.id)
-    return {
-        "access_token": access_token,   
-        "token_type": "Bearer"
-    }     
+# @auth_router.get("/refresh")
+# async def use_refresh_token(usuario: Usuario = Depends(verificar_token)):
+#     access_token = criar_token(usuario.id)
+#     return {
+#         "access_token": access_token,   
+#         "token_type": "Bearer"
+#     }     
