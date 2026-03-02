@@ -63,3 +63,8 @@ class ResponseVisualizarVendedoresSchema(BaseModel):
     id_empresa: int
     nome_empresa: str
     vendedores: List[VendedorSchema]
+
+class VisualizarClientesSchema(BaseModel):
+    nome: str
+    # endereco: str -> acessa outra tabela
+    limite_credito: float
