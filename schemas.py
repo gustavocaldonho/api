@@ -64,7 +64,20 @@ class ResponseVisualizarVendedoresSchema(BaseModel):
     nome_empresa: str
     vendedores: List[VendedorSchema]
 
+    class Config:
+        from_attibutes = True
+
 class VisualizarClientesSchema(BaseModel):
-    nome: str
-    # endereco: str -> acessa outra tabela
-    limite_credito: float
+    nome_pessoa: str # Pessoas
+    logradouro: str # Endereco
+    numero: str # Endereco
+    complemento: Optional[str] = None # Endereco
+    bairro: str # Bairro
+    cidade: str # Cidades
+    cep: Optional[str] = None # Endereco
+    ponto_referencia: Optional[str] = None # Endereco
+    uf: str # Cidades
+    limite_credito: float # Pessoas
+
+    class Config:
+        orm_mode = True

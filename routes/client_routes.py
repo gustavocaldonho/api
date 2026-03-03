@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from models.pessoas import Pessoas
-from models.usuarios_integra import Usuarios_Integra
+from models.enderecos import Enderecos
+from models.bairros import Bairros
+from models.cidades import Cidades
 from dependecies import pegar_sessao, verificar_token
 from schemas import VisualizarClientesSchema
 from sqlalchemy.orm import Session
@@ -20,14 +22,48 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     #    raise HTTPException(status_code=401, detail="Você não tem autorização para consultar os clientes")
     
     skip = (page-1)*size
-    # se o vendedor possuir autorização, ele consulta os clientes
-    query =  session.query(Pessoas).filter(Pessoas.empresa_id==empresa_id)
-    # filtrando os clientes pelo nome se o usuário digitar
+
+    # construir a query única com joins e filtros aplicados
+    clientes_query = (
+        session.query(
+            Pessoas.nome.label("nome_pessoa"),
+            Pessoas.limite_credito,
+            Enderecos.logradouro,
+            Enderecos.numero,
+            Enderecos.complemento,
+            Enderecos.cep,
+            Enderecos.ponto_referencia,
+            Bairros.nome.label("bairro"),
+            Cidades.nome.label("cidade"),
+            Cidades.uf
+        )
+        .join(Enderecos, Enderecos.pessoa_id == Pessoas.id)
+        .join(Bairros, Bairros.id == Enderecos.bairro_id)
+        .join(Cidades, Cidades.id == Enderecos.cidade_id)
+        .filter(Pessoas.empresa_id == empresa_id)
+    )
+    # se o nome do cliente for fornecido, adiciona um filtro para buscar clientes cujo nome contenha a string fornecida (case-insensitive)
     if nome_cliente:
-        query = query.filter(Pessoas.nome.ilike(f"%{nome_cliente}%"))
-    # ordenando os nomes e aplicando a paginação
-    clientes = query.order_by(Pessoas.nome).offset(skip).limit(size).all()
+        clientes_query = clientes_query.filter(Pessoas.nome.ilike(f"%{nome_cliente}%"))
+    # aplica ordenação, paginação e executa a query
+    clientes = clientes_query.order_by(Pessoas.nome).offset(skip).limit(size).all()
+    # se a consulta não retornar nenhum cliente, lança uma exceção HTTP 400 com uma mensagem de erro
     if not clientes:
         raise HTTPException(status_code=400, detail="Não foram encontrados clientes para a referida empresa (empresa_id)")
-    else:
-        return clientes
+    # cada linha é uma tupla na ordem dos campos selecionados; empacotamos em dicionários
+    resultado = [
+        {
+            "nome_pessoa": nome_pessoa,
+            "limite_credito": limite_credito,
+            "logradouro": logradouro,
+            "numero": numero,
+            "complemento": complemento,
+            "bairro": bairro,
+            "cidade": cidade,
+            "cep": cep,
+            "ponto_referencia": ponto_referencia,
+            "uf": uf,
+        }
+        for nome_pessoa, limite_credito, logradouro, numero, complemento, bairro, cidade, cep, ponto_referencia, uf in clientes
+    ]
+    return resultado
