@@ -37,9 +37,9 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
             Cidades.nome.label("cidade"),
             Cidades.uf
         )
-        .join(Enderecos, Enderecos.pessoa_id == Pessoas.id)
-        .join(Bairros, Bairros.id == Enderecos.bairro_id)
-        .join(Cidades, Cidades.id == Enderecos.cidade_id)
+        .outerjoin(Enderecos, Enderecos.pessoa_id == Pessoas.id)
+        .outerjoin(Bairros, Bairros.id == Enderecos.bairro_id)
+        .outerjoin(Cidades, Cidades.id == Enderecos.cidade_id)
         .filter(Pessoas.empresa_id == empresa_id)
     )
     # se o nome do cliente for fornecido, adiciona um filtro para buscar clientes cujo nome contenha a string fornecida (case-insensitive)
@@ -58,12 +58,12 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
             "logradouro": logradouro,
             "numero": numero,
             "complemento": complemento,
-            "bairro": bairro,
-            "cidade": cidade,
             "cep": cep,
             "ponto_referencia": ponto_referencia,
+            "bairro": bairro,
+            "cidade": cidade,
             "uf": uf,
         }
-        for nome_pessoa, limite_credito, logradouro, numero, complemento, bairro, cidade, cep, ponto_referencia, uf in clientes
+        for nome_pessoa, limite_credito, logradouro, numero, complemento, cep, ponto_referencia, bairro, cidade, uf in clientes
     ]
     return resultado

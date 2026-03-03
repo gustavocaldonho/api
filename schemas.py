@@ -69,14 +69,14 @@ class ResponseVisualizarVendedoresSchema(BaseModel):
 
 class VisualizarClientesSchema(BaseModel):
     nome_pessoa: str # Pessoas
-    logradouro: str # Endereco
-    numero: str # Endereco
+    logradouro: Optional[str] = None  # Endereco
+    numero: Optional[str] = None  # Endereco
     complemento: Optional[str] = None # Endereco
-    bairro: str # Bairro
-    cidade: str # Cidades
+    bairro: Optional[str] = None # Bairro
+    cidade: Optional[str] = None # Cidades
     cep: Optional[str] = None # Endereco
     ponto_referencia: Optional[str] = None # Endereco
-    uf: str # Cidades
+    uf: Optional[str] = None  # Cidades
     limite_credito: float # Pessoas
 
     class Config:
