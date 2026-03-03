@@ -65,7 +65,7 @@ class ResponseVisualizarVendedoresSchema(BaseModel):
     vendedores: List[VendedorSchema]
 
     class Config:
-        from_attibutes = True
+        from_attributes = True
 
 class VisualizarClientesSchema(BaseModel):
     nome_pessoa: str # Pessoas
@@ -80,4 +80,4 @@ class VisualizarClientesSchema(BaseModel):
     limite_credito: float # Pessoas
 
     class Config:
-        orm_mode = True
+        from_attributes = True
