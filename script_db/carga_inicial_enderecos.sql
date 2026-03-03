@@ -1,0 +1,37 @@
+insert into enderecos
+(empresa_id, pessoa_id, sequencia, nome, ativo, bairro_id, cidade_id,
+ logradouro, numero, complemento, cep, tipo, padrao, ponto_referencia, data_registro)
+values
+(4,5000,1,'Endereco Principal',true,23,3201506,'Rua A','100',null,'29700-000',1,true,'Proximo ao Centro','2026-03-03'),
+(4,5001,1,'Endereco Principal',true,1,3201506,'Rua B','101',null,'29700-010',1,true,'Proximo a Praca','2026-03-03'),
+(4,5002,1,'Endereco Principal',true,3,3201506,'Rua C','102','Casa','29700-020',1,true,'Mercado Local','2026-03-03'),
+(4,5003,1,'Endereco Principal',true,4,3201506,'Rua D','103',null,'29700-030',1,true,'Padaria Esquina','2026-03-03'),
+(4,5004,1,'Endereco Principal',true,5,3201506,'Rua E','104','Apto 1','29700-040',1,true,'Escola Proxima','2026-03-03'),
+(4,5005,1,'Endereco Principal',true,6,3201506,'Rua F','105',null,'29700-050',1,true,'Farmacia','2026-03-03'),
+(4,5006,1,'Endereco Principal',true,7,3201506,'Rua G','106',null,'29700-060',1,true,'Igreja','2026-03-03'),
+(4,5007,1,'Endereco Principal',true,8,3201506,'Rua H','107','Fundos','29700-070',1,true,'Posto Gasolina','2026-03-03'),
+(4,5008,1,'Endereco Principal',true,9,3201506,'Rua I','108',null,'29700-080',1,true,'Supermercado','2026-03-03'),
+(4,5009,1,'Endereco Principal',true,12,3201506,'Rua J','109',null,'29700-090',1,true,'Hospital','2026-03-03'),
+
+(4,5010,1,'Endereco Principal',true,15,3201506,'Rua K','110',null,'29700-100',1,true,'Praca Central','2026-03-03'),
+(4,5011,1,'Endereco Principal',true,16,3201506,'Rua L','111','Casa','29700-110',1,true,'Rodoviaria','2026-03-03'),
+(4,5012,1,'Endereco Principal',true,18,3201506,'Rua M','112',null,'29700-120',1,true,'Shopping','2026-03-03'),
+(4,5013,1,'Endereco Principal',true,20,3201506,'Rua N','113',null,'29700-130',1,true,'Delegacia','2026-03-03'),
+(4,5014,1,'Endereco Principal',true,22,3201506,'Rua O','114',null,'29700-140',1,true,'Escola Municipal','2026-03-03'),
+(4,5015,1,'Endereco Principal',true,24,3201506,'Rua P','115',null,'29700-150',1,true,'Academia','2026-03-03'),
+(4,5016,1,'Endereco Principal',true,25,3201506,'Rua Q','116',null,'29700-160',1,true,'Banco','2026-03-03'),
+(4,5017,1,'Endereco Principal',true,27,3201506,'Rua R','117',null,'29700-170',1,true,'Loja Centro','2026-03-03'),
+(4,5018,1,'Endereco Principal',true,28,3201506,'Rua S','118',null,'29700-180',1,true,'Oficina','2026-03-03'),
+(4,5019,1,'Endereco Principal',true,29,3201506,'Rua T','119',null,'29700-190',1,true,'Material Construcao','2026-03-03'),
+
+(4,5020,1,'Endereco Principal',true,30,3201506,'Rua U','120',null,'29700-200',1,true,'Clinica','2026-03-03'),
+(4,5021,1,'Endereco Principal',true,31,3201506,'Rua V','121',null,'29700-210',1,true,'Posto Saude','2026-03-03'),
+(4,5022,1,'Endereco Principal',true,32,3201506,'Rua W','122',null,'29700-220',1,true,'Campo Futebol','2026-03-03'),
+(4,5023,1,'Endereco Principal',true,33,3201506,'Rua X','123',null,'29700-230',1,true,'Igreja Matriz','2026-03-03'),
+(4,5024,1,'Endereco Principal',true,34,3201506,'Rua Y','124',null,'29700-240',1,true,'Supermercado 2','2026-03-03'),
+(4,5025,1,'Endereco Principal',true,35,3201506,'Rua Z','125',null,'29700-250',1,true,'Padaria Nova','2026-03-03'),
+(4,5026,1,'Endereco Principal',true,36,3201506,'Rua AA','126',null,'29700-260',1,true,'Oficina 2','2026-03-03'),
+(4,5027,1,'Endereco Principal',true,37,3201506,'Rua AB','127',null,'29700-270',1,true,'Hospital 2','2026-03-03'),
+(4,5028,1,'Endereco Principal',true,38,3201506,'Rua AC','128',null,'29700-280',1,true,'Escola 2','2026-03-03'),
+(4,5029,1,'Endereco Principal',true,39,3201506,'Rua AD','129',null,'29700-290',1,true,'Centro Comunitario','2026-03-03'),
+(4,5030,1,'Endereco Principal',true,40,3201506,'Rua AE','130',null,'29700-300',1,true,'Praça Nova','2026-03-03');
