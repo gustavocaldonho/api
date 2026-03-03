@@ -7,3 +7,4 @@ from .pessoas import Pessoas
 from .bairros import Bairros
 from .cidades import Cidades
 from .enderecos import Enderecos
+from .pessoa_contatos import PessoaContatos

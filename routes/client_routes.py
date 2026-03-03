@@ -3,6 +3,7 @@ from models.pessoas import Pessoas
 from models.enderecos import Enderecos
 from models.bairros import Bairros
 from models.cidades import Cidades
+from models.pessoa_contatos import PessoaContatos
 from dependecies import pegar_sessao, verificar_token
 from schemas import VisualizarClientesSchema
 from sqlalchemy.orm import Session
@@ -35,11 +36,16 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
             Enderecos.ponto_referencia,
             Bairros.nome.label("bairro"),
             Cidades.nome.label("cidade"),
-            Cidades.uf
+            Cidades.uf,
+            PessoaContatos.contato
         )
         .outerjoin(Enderecos, Enderecos.pessoa_id == Pessoas.id)
         .outerjoin(Bairros, Bairros.id == Enderecos.bairro_id)
         .outerjoin(Cidades, Cidades.id == Enderecos.cidade_id)
+        .outerjoin(PessoaContatos, (
+            PessoaContatos.pessoa_id == Pessoas.id) 
+            & (PessoaContatos.empresa_id == empresa_id) 
+            & (PessoaContatos.sequencia == 1)) # join para pegar o contato principal do cliente (sequencia 1)
         .filter(Pessoas.empresa_id == empresa_id)
     )
     # se o nome do cliente for fornecido, adiciona um filtro para buscar clientes cujo nome contenha a string fornecida (case-insensitive)
@@ -63,7 +69,10 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
             "bairro": bairro,
             "cidade": cidade,
             "uf": uf,
+            "contato": contato
         }
-        for nome_pessoa, limite_credito, logradouro, numero, complemento, cep, ponto_referencia, bairro, cidade, uf in clientes
+        for nome_pessoa, limite_credito, logradouro, numero, complemento, 
+            cep, ponto_referencia, bairro, cidade, uf, contato 
+            in clientes
     ]
     return resultado

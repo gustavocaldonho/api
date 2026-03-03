@@ -77,6 +77,7 @@ class VisualizarClientesSchema(BaseModel):
     cep: Optional[str] = None # Endereco
     ponto_referencia: Optional[str] = None # Endereco
     uf: Optional[str] = None  # Cidades
+    contato: Optional[str] = None # PessoaContatos
     limite_credito: float # Pessoas
 
     class Config:
