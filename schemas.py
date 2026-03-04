@@ -1,3 +1,6 @@
+from datetime import date, datetime
+from decimal import Decimal
+
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -79,6 +82,29 @@ class VisualizarClientesSchema(BaseModel):
     uf: Optional[str] = None  # Cidades
     contato: Optional[str] = None # PessoaContatos
     limite_credito: float # Pessoas
+
+    class Config:
+        from_attributes = True
+
+class VisualizarItensSchema(BaseModel):
+    id: int
+    nome: str 
+    ativo: bool 
+    permitir_desconto: bool 
+    nome_grupo: str 
+    nome_subgrupo: str 
+    nome_classe: str 
+    sigla: str 
+    preco_custo: Decimal 
+    preco_zero: Decimal 
+    preco_venda: Decimal 
+    preco_promocao: Decimal 
+    preco_pmc: Decimal 
+    saldo_estoque: Decimal 
+    desconto_maximo: Decimal 
+    data_fim_promocao: Optional[date] = None
+    data_inicio_promocao: Optional[date] = None
+    data_registro: datetime 
 
     class Config:
         from_attributes = True
