@@ -3,20 +3,20 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
-from models.recebimentos import Recebimentos
+from models.pagamentos import Pagamentos
 from schemas import (
     RecebPagamListSchema,
     TiposRecebPagamSchema,
     RecebPagamListResponseSchema
 )
 
-receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
+payment_router = APIRouter(prefix="/pagamentos", tags=["pagamentos"])
 
-@receipt_router.get(
-    "/listar_recebimentos/{empresa_id}",
+@payment_router.get(
+    "/listar_pagamentos/{empresa_id}",
     response_model=RecebPagamListResponseSchema
 )
-async def listar_recebimentos(
+async def listar_pagamentos(
     empresa_id: int,
     data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
     data_final: date = Query(..., description="Data final (YYYY-MM-DD)"),
@@ -25,23 +25,23 @@ async def listar_recebimentos(
     session: Session = Depends(pegar_sessao)
 ):
     skip = (page - 1) * size
-    recebimentos_query = session.query(Recebimentos).filter(
-        Recebimentos.empresa_id == empresa_id
+    pagamentos_query = session.query(Pagamentos).filter(
+        Pagamentos.empresa_id == empresa_id
     )
     if data_inicial and data_final:
-        recebimentos_query = recebimentos_query.filter(
-            Recebimentos.data_movimento.between(data_inicial, data_final)
+        pagamentos_query = pagamentos_query.filter(
+            Pagamentos.data_movimento.between(data_inicial, data_final)
         )
-    todos_recebimentos = recebimentos_query.all()
+    todos_pagamentos = pagamentos_query.all()
 
-    if not todos_recebimentos:
+    if not todos_pagamentos:
         raise HTTPException(
             status_code=400,
-            detail="Não foram encontrados recebimentos para a referida empresa (empresa_id) no período especificado"
+            detail="Não foram encontrados pagamentos para a referida empresa (empresa_id) no período especificado"
         )
     resultado = {}
 
-    for r in todos_recebimentos:
+    for r in todos_pagamentos:
         data = r.data_movimento
         if data not in resultado:
             resultado[data] = {
