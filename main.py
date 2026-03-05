@@ -24,8 +24,10 @@ from routes.auth_routes import auth_router
 from routes.order_routes import order_router
 from routes.client_routes import client_router
 from routes.item_routes import item_router
+from routes.receipt_routes import receipt_router
 
 # app.include_router(order_router)
 app.include_router(auth_router)
 app.include_router(client_router)
 app.include_router(item_router)
+app.include_router(receipt_router)

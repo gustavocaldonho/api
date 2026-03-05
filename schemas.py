@@ -1,6 +1,5 @@
 from datetime import date, datetime
 from decimal import Decimal
-
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -105,6 +104,21 @@ class VisualizarItensSchema(BaseModel):
     data_fim_promocao: Optional[date] = None
     data_inicio_promocao: Optional[date] = None
     data_registro: datetime 
+
+    class Config:
+        from_attributes = True
+
+class VisualizarRecebimentosSchema(BaseModel):
+    data_movimento: date
+    nome: str
+    valor: Decimal
+
+    class Config:
+        from_attributes = True
+
+class RecebimentosListSchema(BaseModel):
+    recebimentos: List[VisualizarRecebimentosSchema]
+    total_recebimentos: Decimal
 
     class Config:
         from_attributes = True
