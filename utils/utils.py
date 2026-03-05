@@ -1,3 +1,4 @@
+import decimal
 import re
 
 def limpar_cnpj(cnpj: str) -> str:
@@ -27,3 +28,9 @@ def formatar_cnpj(cnpj: str) -> str:
 
     # Aplica formatação
     return f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
+
+def calc_total(itens: list) -> decimal.Decimal:
+    total = decimal.Decimal(0)
+    for r in itens:
+        total += r.valor
+    return total

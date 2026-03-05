@@ -108,17 +108,25 @@ class VisualizarItensSchema(BaseModel):
     class Config:
         from_attributes = True
 
-class VisualizarRecebimentosSchema(BaseModel):
-    data_movimento: date
-    nome: str
-    valor: Decimal
+class TiposRecebimentosSchema(BaseModel):
+    pix: Decimal
+    dinheiro: Decimal
+    duplicata: Decimal
 
     class Config:
         from_attributes = True
 
 class RecebimentosListSchema(BaseModel):
-    recebimentos: List[VisualizarRecebimentosSchema]
-    total_recebimentos: Decimal
+    data_movimento: date
+    total_dia: Decimal
+    tipos: TiposRecebimentosSchema
+
+    class Config:
+        from_attributes = True
+
+class RecebimentosListResponseSchema(BaseModel):
+    total_faturamento: Decimal
+    recebimentos: List[RecebimentosListSchema]
 
     class Config:
         from_attributes = True
