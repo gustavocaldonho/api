@@ -1,21 +1,14 @@
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
 from models.pagamentos import Pagamentos
-from schemas import (
-    RecebPagamListSchema,
-    TiposRecebPagamSchema,
-    RecebPagamListResponseSchema
-)
 
 payment_router = APIRouter(prefix="/pagamentos", tags=["pagamentos"])
 
-@payment_router.get(
-    "/listar/{empresa_id}",
-    response_model=RecebPagamListResponseSchema
-)
+@payment_router.get("/listar/{empresa_id}")
 async def listar_pagamentos(
     empresa_id: int,
     data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
@@ -24,55 +17,53 @@ async def listar_pagamentos(
     size: int = Query(10, ge=1, le=100),
     session: Session = Depends(pegar_sessao)
 ):
-    skip = (page - 1) * size
-    pagamentos_query = session.query(Pagamentos).filter(
-        Pagamentos.empresa_id == empresa_id
-    )
-    if data_inicial and data_final:
-        pagamentos_query = pagamentos_query.filter(
-            Pagamentos.data_movimento.between(data_inicial, data_final)
+    pagamentos = (
+        session.query(
+            Pagamentos.data_movimento,
+            Pagamentos.nome,
+            func.sum(Pagamentos.valor).label("total_tipo")
         )
-    todos_pagamentos = pagamentos_query.all()
-
-    if not todos_pagamentos:
+        .filter(Pagamentos.empresa_id == empresa_id)
+        .filter(Pagamentos.data_movimento.between(data_inicial, data_final))
+        .group_by(Pagamentos.data_movimento, Pagamentos.nome)
+        .order_by(Pagamentos.data_movimento)
+        .all()
+    )
+    if not pagamentos:
         raise HTTPException(
             status_code=400,
-            detail="Não foram encontrados pagamentos para a referida empresa (empresa_id) no período especificado"
+            detail="Não foram encontrados pagamentos para a empresa no período especificado"
         )
-    resultado = {}
 
-    for r in todos_pagamentos:
-        data = r.data_movimento
+    # Agrupar por data
+    resultado = {}
+    for p in pagamentos:
+        data = p.data_movimento
         if data not in resultado:
             resultado[data] = {
                 "data_movimento": data,
                 "total_dia": Decimal("0"),
-                "tipos": {
-                    "pix": Decimal("0"),
-                    "dinheiro": Decimal("0"),
-                    "duplicata": Decimal("0"),
-                }
+                "tipos": []
             }
 
-        resultado[data]["total_dia"] += r.valor
+        resultado[data]["tipos"].append({
+            "nome": p.nome,
+            "total": p.total_tipo
+        })
 
-        nome = r.nome.lower()
-        if nome in resultado[data]["tipos"]:
-            resultado[data]["tipos"][nome] += r.valor
+        resultado[data]["total_dia"] += p.total_tipo
 
-    lista_dias = list(resultado.values())
-    total_faturamento = sum(d["total_dia"] for d in lista_dias)
-    lista_dias = lista_dias[skip: skip + size]
+    lista_pagamentos = list(resultado.values())
 
-    resposta = [
-        RecebPagamListSchema(
-            data_movimento=v["data_movimento"],
-            total_dia=v["total_dia"],
-            tipos=TiposRecebPagamSchema(**v["tipos"])
-        )
-        for v in lista_dias
-    ]
-    return RecebPagamListResponseSchema(
-        total_faturamento=total_faturamento,
-        recebimentos=resposta
-    )
+    # total do período
+    total_periodo = sum(d["total_dia"] for d in lista_pagamentos)
+
+    # paginação
+    inicio = (page - 1) * size
+    fim = inicio + size
+    query_paginada = lista_pagamentos[inicio:fim]
+
+    return {
+        "total_periodo": total_periodo,
+        "pagamentos": query_paginada
+    }
