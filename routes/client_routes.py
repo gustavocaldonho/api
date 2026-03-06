@@ -9,9 +9,9 @@ from schemas import VisualizarClientesSchema
 from sqlalchemy.orm import Session
 from typing import List
 
-client_router = APIRouter(prefix="/client", tags=["clientes"])
+client_router = APIRouter(prefix="/clientes", tags=["clientes"])
 
-@client_router.get("/listar_clientes/{empresa_id}", response_model=List[VisualizarClientesSchema])
+@client_router.get("/listar/{empresa_id}", response_model=List[VisualizarClientesSchema])
 async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None, min_length=3, max_length=50), 
                           page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=100), 
                           session: Session = Depends(pegar_sessao)):
