@@ -3,13 +3,15 @@ from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
 from models.faturamentos import Faturamentos
+from models.usuarios_integra import Usuarios_Integra
+from models.condicoes_pagamentos import CondicoesPagamentos
 from sqlalchemy import func
 from decimal import Decimal, ROUND_HALF_UP
 
 revenue_router = APIRouter(prefix="/faturamentos", tags=["faturamentos"])
 
 @revenue_router.get(
-    "/listar_faturamentos/diario/{empresa_id}",
+    "/listar/diario/{empresa_id}",
 )
 async def listar_faturamentos_diario(
     empresa_id: int,
@@ -58,7 +60,7 @@ async def listar_faturamentos_diario(
     }
 
 @revenue_router.get(
-    "/listar_faturamentos/vendedor/{empresa_id}",
+    "/listar/vendedor/{empresa_id}",
 )
 async def listar_faturamentos_vendedor(
     empresa_id: int,
@@ -70,18 +72,19 @@ async def listar_faturamentos_vendedor(
 ):
     skip = (page - 1) * size
 
-    # ESTÁ MOSTRANDO O VENDEDOR_ID -> TROCAR PARA MOSTRAR O NOME DO VENDEDOR -> PRECISA FAZER JOIN COM A TABELA DE USUÁRIOS_INTEGRA (USUÁRIOS_INTEGRA  TEM O NOME DO VENDEDOR)
-
     # agrupando por vendedor e somando o valor
+    total = func.sum(Faturamentos.valor_total).label("total_vendedor")
     faturamentos = (
         session.query(
             Faturamentos.vendedor_id,
-            func.sum(Faturamentos.valor_total).label("total_dia")
+            Usuarios_Integra.usuario,
+            total,
         )
+        .join(Usuarios_Integra, Faturamentos.vendedor_id == Usuarios_Integra.vendedor_id)
         .filter(Faturamentos.empresa_id == empresa_id)
         .filter(Faturamentos.data_movimento.between(data_inicial, data_final))
-        .group_by(Faturamentos.vendedor_id)
-        # .order_by(Faturamentos.data_movimento)
+        .group_by(Faturamentos.vendedor_id, Usuarios_Integra.usuario)
+        .order_by(total.desc())
         .all()
     )
     if not faturamentos:
@@ -90,17 +93,73 @@ async def listar_faturamentos_vendedor(
             detail="Não foram encontrados faturamentos para a referida empresa no período especificado"
         )
     # total do período
-    total_periodo = sum(r.total_dia for r in faturamentos)
+    total_periodo = sum(r.total_vendedor for r in faturamentos)
     # paginação
     query_paginada = faturamentos[skip: skip + size]
     # montar resposta
     dados = []
     for r in query_paginada:
-        porcentagem = ((r.total_dia / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        porcentagem = ((r.total_vendedor / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         dados.append(
             {
                 "vendedor_id": r.vendedor_id,
-                "total_dia": r.total_dia,
+                "usuario": r.usuario,
+                "total_vendedor": r.total_vendedor,
+                "porcentagem": porcentagem
+            }
+        )
+    return {
+        "total_faturamento": total_periodo,
+        "faturamentos": dados
+    }
+
+@revenue_router.get(
+    "/listar/condicao_pagamento/{empresa_id}",
+)
+async def listar_faturamentos_condicao_pagamento(
+    empresa_id: int,
+    data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
+    data_final: date = Query(..., description="Data final (YYYY-MM-DD)"),
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    session: Session = Depends(pegar_sessao)
+):
+    skip = (page - 1) * size
+
+    # agrupando por condicao_pagamento e somando o valor
+    total = func.sum(Faturamentos.valor_total).label("total")
+    faturamentos = (
+        session.query(
+            Faturamentos.condicao_pagamento_id,
+            CondicoesPagamentos.nome,
+            total,
+        )
+        .join(CondicoesPagamentos, Faturamentos.condicao_pagamento_id == CondicoesPagamentos.id)
+        .filter(Faturamentos.empresa_id == empresa_id)
+        .filter(CondicoesPagamentos.empresa_id == empresa_id)
+        .filter(Faturamentos.data_movimento.between(data_inicial, data_final))
+        .group_by(Faturamentos.condicao_pagamento_id, CondicoesPagamentos.nome)
+        .order_by(total.desc())
+        .all()
+    )
+    if not faturamentos:
+        raise HTTPException(
+            status_code=400,
+            detail="Não foram encontrados faturamentos para a referida empresa no período especificado"
+        )
+    # total do período
+    total_periodo = sum(r.total for r in faturamentos)
+    # paginação
+    query_paginada = faturamentos[skip: skip + size]
+    # montar resposta
+    dados = []
+    for r in query_paginada:
+        porcentagem = ((r.total / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        dados.append(
+            {
+                "condicao_pagamento_id": r.condicao_pagamento_id,
+                "nome": r.nome,
+                "total": r.total,
                 "porcentagem": porcentagem
             }
         )
