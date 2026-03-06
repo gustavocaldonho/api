@@ -34,7 +34,6 @@ async def listar_pagamentos(
             status_code=400,
             detail="Não foram encontrados pagamentos para a empresa no período especificado"
         )
-
     # Agrupar por data
     resultado = {}
     for p in pagamentos:
@@ -45,19 +44,15 @@ async def listar_pagamentos(
                 "total_dia": Decimal("0"),
                 "tipos": []
             }
-
         resultado[data]["tipos"].append({
             "nome": p.nome,
             "total": p.total_tipo
         })
-
         resultado[data]["total_dia"] += p.total_tipo
 
     lista_pagamentos = list(resultado.values())
-
     # total do período
     total_periodo = sum(d["total_dia"] for d in lista_pagamentos)
-
     # paginação
     inicio = (page - 1) * size
     fim = inicio + size

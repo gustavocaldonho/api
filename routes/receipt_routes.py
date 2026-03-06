@@ -1,20 +1,15 @@
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
 from models.recebimentos import Recebimentos
-from schemas import (
-    RecebPagamListSchema,
-    TiposRecebPagamSchema,
-    RecebPagamListResponseSchema
-)
 
 receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 
 @receipt_router.get(
-    "/listar/{empresa_id}",
-    response_model=RecebPagamListResponseSchema
+    "/listar/{empresa_id}"
 )
 async def listar_recebimentos(
     empresa_id: int,
@@ -24,55 +19,48 @@ async def listar_recebimentos(
     size: int = Query(10, ge=1, le=100),
     session: Session = Depends(pegar_sessao)
 ):
-    skip = (page - 1) * size
-    recebimentos_query = session.query(Recebimentos).filter(
-        Recebimentos.empresa_id == empresa_id
-    )
-    if data_inicial and data_final:
-        recebimentos_query = recebimentos_query.filter(
-            Recebimentos.data_movimento.between(data_inicial, data_final)
+    recebimentos = (
+        session.query(
+            Recebimentos.data_movimento,
+            Recebimentos.nome,
+            func.sum(Recebimentos.valor).label("total_tipo")
         )
-    todos_recebimentos = recebimentos_query.all()
-
-    if not todos_recebimentos:
+        .filter(Recebimentos.empresa_id == empresa_id)
+        .filter(Recebimentos.data_movimento.between(data_inicial, data_final))
+        .group_by(Recebimentos.data_movimento, Recebimentos.nome)
+        .order_by(Recebimentos.data_movimento)
+        .all()
+    )
+    if not recebimentos:
         raise HTTPException(
             status_code=400,
             detail="Não foram encontrados recebimentos para a referida empresa (empresa_id) no período especificado"
         )
+    # agrupar por data
     resultado = {}
-
-    for r in todos_recebimentos:
+    for r in recebimentos:
         data = r.data_movimento
         if data not in resultado:
             resultado[data] = {
                 "data_movimento": data,
                 "total_dia": Decimal("0"),
-                "tipos": {
-                    "pix": Decimal("0"),
-                    "dinheiro": Decimal("0"),
-                    "duplicata": Decimal("0"),
-                }
+                "tipos": []
             }
+        resultado[data]["tipos"].append({
+            "nome": r.nome,
+            "total": r.total_tipo 
+        })
+        resultado[data]["total_dia"] += r.total_tipo
 
-        resultado[data]["total_dia"] += r.valor
+    lista_recebimentos = list(resultado.values())
+    # total do período
+    total_periodo = sum(d["total_dia"] for d in lista_recebimentos)
+    # paginação
+    inicio = (page - 1) * size
+    fim = inicio + size
+    query_paginada = lista_recebimentos[inicio:fim]
 
-        nome = r.nome.lower()
-        if nome in resultado[data]["tipos"]:
-            resultado[data]["tipos"][nome] += r.valor
-
-    lista_dias = list(resultado.values())
-    total_faturamento = sum(d["total_dia"] for d in lista_dias)
-    lista_dias = lista_dias[skip: skip + size]
-
-    resposta = [
-        RecebPagamListSchema(
-            data_movimento=v["data_movimento"],
-            total_dia=v["total_dia"],
-            tipos=TiposRecebPagamSchema(**v["tipos"])
-        )
-        for v in lista_dias
-    ]
-    return RecebPagamListResponseSchema(
-        total_faturamento=total_faturamento,
-        recebimentos=resposta
-    )
+    return {
+        "total_periodo": total_periodo,
+        "recebimentos": query_paginada
+    }
