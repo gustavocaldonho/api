@@ -7,7 +7,7 @@ from schemas import VisualizarItensSchema
 
 item_router = APIRouter(prefix="/itens", tags=["itens"])
 
-@item_router.get("/listar_itens/{empresa_id}", response_model=List[VisualizarItensSchema])
+@item_router.get("/listar/{empresa_id}", response_model=List[VisualizarItensSchema])
 async def listar_itens(empresa_id: int, estoque_positivo: bool = Query(False), 
                        nome_item: str | None = Query(None, min_length=3, max_length=50), 
                        page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=100), 

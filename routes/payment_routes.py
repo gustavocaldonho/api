@@ -13,7 +13,7 @@ from schemas import (
 payment_router = APIRouter(prefix="/pagamentos", tags=["pagamentos"])
 
 @payment_router.get(
-    "/listar_pagamentos/{empresa_id}",
+    "/listar/{empresa_id}",
     response_model=RecebPagamListResponseSchema
 )
 async def listar_pagamentos(

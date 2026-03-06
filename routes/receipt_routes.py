@@ -13,7 +13,7 @@ from schemas import (
 receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 
 @receipt_router.get(
-    "/listar_recebimentos/{empresa_id}",
+    "/listar/{empresa_id}",
     response_model=RecebPagamListResponseSchema
 )
 async def listar_recebimentos(
