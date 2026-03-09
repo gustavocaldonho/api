@@ -5,7 +5,10 @@ from dependecies import pegar_sessao
 from models.pre_venda_itens import PreVendaItens
 from models.pre_vendas import PreVendas
 from models.condicoes_pagamentos import CondicoesPagamentos
+from models.pessoas import Pessoas
+from models.itens import Itens
 from sqlalchemy import func
+from decimal import Decimal, ROUND_HALF_UP
 
 pre_sale_router = APIRouter(prefix="/pre_vendas", tags=["pre_vendas"])
 
@@ -93,5 +96,80 @@ async def listar_faturamentos_diario(
 
     return {
         "total_pre_vendas": total_periodo,
+        "pre_vendas": dados
+    }
+
+@pre_sale_router.get(
+    "/itens/listar/{pre_venda_id}",
+)
+async def listar_faturamentos_diario(
+    pre_venda_id: int,
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    session: Session = Depends(pegar_sessao)
+):
+    skip = (page - 1) * size
+    pre_vendas_itens = (
+        session.query(
+            PreVendas.destinatario_id,
+            Pessoas.nome.label("destinatario_nome"),
+            PreVendaItens.item_id,
+            Itens.nome,
+            PreVendaItens.sequencia,
+            PreVendaItens.quantidade,
+            Itens.preco_zero,
+            PreVendaItens.valor_desconto,
+            PreVendaItens.valor_promocao,
+            PreVendaItens.valor_venda,
+        )
+        .filter(
+            PreVendaItens.pre_venda_id == pre_venda_id,
+        )
+        .join(
+            PreVendaItens,
+            (PreVendas.id == PreVendaItens.pre_venda_id) &
+            (PreVendas.empresa_id == PreVendaItens.empresa_id)
+        )
+        .join(
+            Itens,
+            (Itens.id == PreVendaItens.item_id)
+        )
+        .join(
+            Pessoas,
+            (Pessoas.id == PreVendas.destinatario_id)
+        )
+        .order_by(PreVendaItens.sequencia)
+    )
+
+    if not pre_vendas_itens:
+        raise HTTPException(
+            status_code=400,
+            detail="Não foram encontradas itens para a referida pré-venda"
+        )
+    
+    # paginação
+    query_paginada = pre_vendas_itens[skip: skip + size]
+    # montando a resposta
+    dados = []
+    for pvi in query_paginada:
+        destinatario_id = pvi.destinatario_id
+        destinatario_nome = pvi.destinatario_nome
+        desconto_porcentagem = ((pvi.valor_desconto / (pvi.preco_zero * pvi.quantidade)) * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) if pvi.preco_zero > 0 else Decimal("0")
+        dados.append(
+            {
+                "item_nome": pvi.nome,
+                "sequencia": pvi.sequencia,
+                "item_id": pvi.item_id,
+                "quantidade": pvi.quantidade,
+                "preco_zero": pvi.preco_zero,
+                "valor_desconto": pvi.valor_desconto,
+                "desconto_porcentagem": desconto_porcentagem,
+                "valor_promocao": pvi.valor_promocao,
+                "valor_venda": pvi.valor_venda,
+            }
+        )
+    return {
+        "destinatario_id": destinatario_id,
+        "destinatario_nome": destinatario_nome,
         "pre_vendas": dados
     }
