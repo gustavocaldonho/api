@@ -79,7 +79,7 @@ async def listar_faturamentos_diario(
     for pv in query_paginada:
         dados.append(
             {
-                "id": pv.id,
+                "pre_venda_id": pv.id,
                 "vendedor_id": pv.vendedor_id,
                 "condicao_pagamento_id": pv.condicao_pagamento_id,
                 "nome_condicao_pagamento": pv.nome,
@@ -93,5 +93,5 @@ async def listar_faturamentos_diario(
 
     return {
         "total_pre_vendas": total_periodo,
-        "faturamentos": dados
+        "pre_vendas": dados
     }
