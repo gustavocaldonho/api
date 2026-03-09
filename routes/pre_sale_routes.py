@@ -10,6 +10,8 @@ from models.itens import Itens
 from sqlalchemy import func
 from decimal import Decimal, ROUND_HALF_UP
 
+from schemas import PreVendaCreateSchema
+
 pre_sale_router = APIRouter(prefix="/pre_vendas", tags=["pre_vendas"])
 
 @pre_sale_router.get(
@@ -173,3 +175,70 @@ async def listar_faturamentos_diario(
         "destinatario_nome": destinatario_nome,
         "pre_vendas": dados
     }
+
+@pre_sale_router.post("/inserir")
+async def inserir_pre_venda(
+    dados: PreVendaCreateSchema,
+    session: Session = Depends(pegar_sessao)
+):
+    # buscando o último id da pré-venda para a empresa e incrementa em 1 para criar o novo id
+    ultimo_id = session.query(func.max(PreVendas.id)).filter(PreVendas.empresa_id == dados.empresa_id).scalar()
+    novo_id = (ultimo_id or 0) + 1
+
+    # valor_desconto_total = sum(item.valor_desconto for item in dados.itens) * dados.desconto_geral
+
+    # cria a pre venda
+    pre_venda = PreVendas(
+        empresa_id=dados.empresa_id,
+        id=novo_id,
+        destinatario_id=dados.destinatario_id,
+        vendedor_id=dados.vendedor_id,
+        condicao_pagamento_id=dados.condicao_pagamento_id,
+        data_registro=date.today(),
+        data_movimento=date.today(),
+        numero=dados.numero,
+        disk_entrega=dados.disk_entrega,
+        enviado=dados.enviado,
+        observacao=dados.observacao,
+        ide_mobile=dados.ide_mobile,
+        qtd_vezes=dados.qtd_vezes,
+    )
+
+    session.add(pre_venda) # precisa adicionar a pré-venda antes de inserir os itens para obter o id da pré-venda
+    session.flush() # para garantir que o id da pré-venda seja gerado antes de inserir os itens
+
+    valor_total = Decimal(0)
+
+    # inserindo os itens
+    for item in dados.itens:
+
+        valor_item = item.valor_venda * item.quantidade
+        valor_total += valor_item
+
+        pre_venda_item = PreVendaItens(
+            empresa_id=dados.empresa_id,
+            pre_venda_id=pre_venda.id,
+            sequencia=item.sequencia,
+            item_id=item.item_id,
+            quantidade=item.quantidade,
+            valor_venda=item.valor_venda,
+            valor_promocao=item.valor_promocao,
+            valor_desconto=item.valor_desconto,
+        )
+
+        session.add(pre_venda_item)
+
+    pre_venda.valor_total = valor_total
+
+    session.commit()
+
+    return {
+        "mensagem": "Pré venda inserida com sucesso",
+        "pre_venda_id": pre_venda.id,
+        "valor_total": valor_total
+    }
+
+# EDITAR PRE VENDA
+# EXCLUIR PRE VENDA
+# ADD ITEM PRE VENDA
+# REMOVER ITEM PRE VENDA

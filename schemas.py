@@ -107,3 +107,31 @@ class VisualizarItensSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PreVendaItemCreateSchema(BaseModel):
+    sequencia: int
+    item_id: int
+    quantidade: Decimal
+    valor_venda: Decimal
+    valor_promocao: Decimal
+    valor_desconto: Decimal
+
+    class Config:
+        from_attributes = True
+
+class PreVendaCreateSchema(BaseModel):
+    empresa_id: int
+    destinatario_id: int
+    vendedor_id: int
+    condicao_pagamento_id: int
+    # desconto_geral: Decimal # não tem na tabela PreVenda
+    numero: int
+    disk_entrega: bool
+    enviado: bool
+    observacao: str
+    ide_mobile: str
+    qtd_vezes: int
+    itens: List[PreVendaItemCreateSchema]
+
+    class Config:
+        from_attributes = True
