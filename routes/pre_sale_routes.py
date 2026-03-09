@@ -17,7 +17,7 @@ pre_sale_router = APIRouter(prefix="/pre_vendas", tags=["pre_vendas"])
 @pre_sale_router.get(
     "/listar/{empresa_id}",
 )
-async def listar_faturamentos_diario(
+async def listar_pre_vendas(
     empresa_id: int,
     vendedor_id: int | None = Query(None),
     data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
@@ -104,7 +104,7 @@ async def listar_faturamentos_diario(
 @pre_sale_router.get(
     "/itens/listar/{pre_venda_id}",
 )
-async def listar_faturamentos_diario(
+async def listar_pre_venda_itens(
     pre_venda_id: int,
     page: int = Query(1, ge=1),
     size: int = Query(10, ge=1, le=100),
