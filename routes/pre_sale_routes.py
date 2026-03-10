@@ -7,10 +7,9 @@ from models.pre_vendas import PreVendas
 from models.condicoes_pagamentos import CondicoesPagamentos
 from models.pessoas import Pessoas
 from models.itens import Itens
+from schemas import PreVendaCreateSchema
 from sqlalchemy import func
 from decimal import Decimal, ROUND_HALF_UP
-
-from schemas import PreVendaCreateSchema
 
 pre_sale_router = APIRouter(prefix="/pre_vendas", tags=["pre_vendas"])
 
@@ -156,6 +155,10 @@ async def listar_pre_venda_itens(
     for pvi in query_paginada:
         destinatario_id = pvi.destinatario_id
         destinatario_nome = pvi.destinatario_nome
+
+        if not destinatario_id or not destinatario_nome:
+            destinatario_nome = "Destinatário não encontrado"
+
         desconto_porcentagem = ((pvi.valor_desconto / (pvi.preco_zero * pvi.quantidade)) * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) if pvi.preco_zero > 0 else Decimal("0")
         dados.append(
             {
@@ -238,7 +241,95 @@ async def inserir_pre_venda(
         "valor_total": valor_total
     }
 
-# EDITAR PRE VENDA
-# EXCLUIR PRE VENDA
-# ADD ITEM PRE VENDA
-# REMOVER ITEM PRE VENDA
+@pre_sale_router.put("/editar/{empresa_id}/{pre_venda_id}")
+async def editar_pre_venda(
+    empresa_id: int,
+    pre_venda_id: int,
+    dados: PreVendaCreateSchema,
+    session: Session = Depends(pegar_sessao)
+):
+    pre_venda = session.query(PreVendas).filter(
+        PreVendas.empresa_id == empresa_id,
+        PreVendas.id == pre_venda_id
+    ).first()
+
+    if not pre_venda:
+        raise HTTPException(status_code=404, detail="Pré venda não encontrada")
+
+    # atualiza cabeçalho
+    pre_venda.destinatario_id = dados.destinatario_id
+    pre_venda.vendedor_id = dados.vendedor_id
+    pre_venda.condicao_pagamento_id = dados.condicao_pagamento_id
+    pre_venda.numero = dados.numero
+    pre_venda.disk_entrega = dados.disk_entrega
+    pre_venda.enviado = dados.enviado
+    pre_venda.observacao = dados.observacao
+    pre_venda.ide_mobile = dados.ide_mobile
+    pre_venda.qtd_vezes = dados.qtd_vezes
+    pre_venda.data_movimento = date.today()
+
+    # remove itens antigos
+    session.query(PreVendaItens).filter(
+        PreVendaItens.empresa_id == empresa_id,
+        PreVendaItens.pre_venda_id == pre_venda_id
+    ).delete()
+
+    valor_total = Decimal(0)
+
+    # insere novos itens
+    for item in dados.itens:
+
+        valor_item = item.valor_venda * item.quantidade
+        valor_total += valor_item
+
+        novo_item = PreVendaItens(
+            empresa_id=empresa_id,
+            pre_venda_id=pre_venda_id,
+            sequencia=item.sequencia,
+            item_id=item.item_id,
+            quantidade=item.quantidade,
+            valor_venda=item.valor_venda,
+            valor_promocao=item.valor_promocao,
+            valor_desconto=item.valor_desconto
+        )
+        session.add(novo_item)
+
+    pre_venda.valor_total = valor_total
+
+    session.commit()
+
+    return {
+        "mensagem": "Pré venda atualizada com sucesso",
+        "pre_venda_id": pre_venda_id,
+        "valor_total": valor_total
+    }
+
+@pre_sale_router.delete("/excluir/{empresa_id}/{pre_venda_id}")
+async def excluir_pre_venda(
+    empresa_id: int,
+    pre_venda_id: int,
+    session: Session = Depends(pegar_sessao)
+):
+    pre_venda = session.query(PreVendas).filter(
+        PreVendas.empresa_id == empresa_id,
+        PreVendas.id == pre_venda_id
+    ).first()
+
+    if not pre_venda:
+        raise HTTPException(status_code=404, detail="Pré venda não encontrada")
+
+    # remove os itens
+    session.query(PreVendaItens).filter(
+        PreVendaItens.empresa_id == empresa_id,
+        PreVendaItens.pre_venda_id == pre_venda_id
+    ).delete()
+
+    # remove a pré-venda
+    session.delete(pre_venda)
+
+    session.commit()
+
+    return {
+        "mensagem": "Pré venda excluída com sucesso",
+        "pre_venda_id": pre_venda_id
+    }
