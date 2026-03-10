@@ -102,6 +102,7 @@ async def obter_informacoes_perfil_clientes(empresa_id: int, pessoa_id: int, ses
         .outerjoin(Bairros, Bairros.id == Enderecos.bairro_id)
         .outerjoin(Cidades, Cidades.id == Enderecos.cidade_id)
         .filter(Enderecos.pessoa_id == pessoa_id)
+        .order_by(Enderecos.sequencia) # ordena os endereços pela sequência para garantir que o endereço principal (sequencia 1) venha primeiro
         .all()
     )
 

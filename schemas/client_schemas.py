@@ -2,8 +2,6 @@ from decimal import Decimal
 from pydantic import BaseModel
 from typing import Optional, List
 
-from requests import session
-
 class VisualizarClientesSchema(BaseModel):
     nome_pessoa: str # Pessoas
     logradouro: Optional[str] = None  # Endereco
