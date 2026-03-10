@@ -5,7 +5,7 @@ from models.bairros import Bairros
 from models.cidades import Cidades
 from models.pessoa_contatos import PessoaContatos
 from dependecies import pegar_sessao, verificar_token
-from schemas import VisualizarClientesSchema
+from schemas.people_schemas import VisualizarClientesSchema
 from sqlalchemy.orm import Session
 from typing import List
 

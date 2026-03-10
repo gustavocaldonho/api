@@ -7,7 +7,7 @@ from models.pre_vendas import PreVendas
 from models.condicoes_pagamentos import CondicoesPagamentos
 from models.pessoas import Pessoas
 from models.itens import Itens
-from schemas import PreVendaCreateSchema
+from schemas.pre_sale_schemas import PreVendaCreateSchema
 from sqlalchemy import func
 from decimal import Decimal, ROUND_HALF_UP
 

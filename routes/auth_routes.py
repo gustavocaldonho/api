@@ -4,7 +4,8 @@ from models.empresas import Empresas
 from models.usuarios_integra import Usuarios_Integra
 from dependecies import pegar_sessao, verificar_token
 from main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from schemas import UsuarioSchema, LoginSchema, ResponseVisualizarVendedoresSchema
+from schemas.other_schemas import UsuarioSchema, LoginSchema
+from schemas.people_schemas import ResponseVisualizarVendedoresSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
