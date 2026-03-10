@@ -3,7 +3,7 @@ from typing import List
 from models.itens import Itens
 from dependecies import pegar_sessao, verificar_token
 from sqlalchemy.orm import Session
-from schemas import VisualizarItensSchema
+from schemas.pre_sale_schemas import VisualizarItensSchema
 
 item_router = APIRouter(prefix="/itens", tags=["itens"])
 

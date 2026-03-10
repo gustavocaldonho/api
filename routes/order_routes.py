@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependecies import pegar_sessao, verificar_token
-from schemas import PedidoSchema, ItemPedidoSchema, ResponsePedidoSchema
+from schemas.other_schemas import PedidoSchema, ItemPedidoSchema, ResponsePedidoSchema
 from models.models import Pedido, Usuario, ItemPedido
 from typing import List
 

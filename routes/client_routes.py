@@ -5,13 +5,13 @@ from models.bairros import Bairros
 from models.cidades import Cidades
 from models.pessoa_contatos import PessoaContatos
 from dependecies import pegar_sessao, verificar_token
-from schemas import VisualizarClientesSchema
+from schemas.client_schemas import visualizarPerfilClienteSchema, visualizarResumoClienteSchema
 from sqlalchemy.orm import Session
 from typing import List
 
 client_router = APIRouter(prefix="/clientes", tags=["clientes"])
 
-@client_router.get("/listar/{empresa_id}", response_model=List[VisualizarClientesSchema])
+@client_router.get("/listar/{empresa_id}", response_model=List[visualizarResumoClienteSchema])
 async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None, min_length=3, max_length=50), 
                           page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=100), 
                           session: Session = Depends(pegar_sessao)):
@@ -27,7 +27,8 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     # construir a query única com joins e filtros aplicados
     clientes_query = (
         session.query(
-            Pessoas.nome.label("nome_pessoa"),
+            Pessoas.id,
+            Pessoas.nome,
             Pessoas.limite_credito,
             Enderecos.logradouro,
             Enderecos.numero,
@@ -37,16 +38,12 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
             Bairros.nome.label("bairro"),
             Cidades.nome.label("cidade"),
             Cidades.uf,
-            PessoaContatos.contato
         )
         .outerjoin(Enderecos, Enderecos.pessoa_id == Pessoas.id)
         .outerjoin(Bairros, Bairros.id == Enderecos.bairro_id)
         .outerjoin(Cidades, Cidades.id == Enderecos.cidade_id)
-        .outerjoin(PessoaContatos, (
-            PessoaContatos.pessoa_id == Pessoas.id) 
-            & (PessoaContatos.empresa_id == empresa_id) 
-            & (PessoaContatos.sequencia == 1)) # join para pegar o contato principal do cliente (sequencia 1)
         .filter(Pessoas.empresa_id == empresa_id)
+        .filter(Enderecos.sequencia == 1) # garante que pegue apenas o endereço principal (sequencia 1)
     )
     # se o nome do cliente for fornecido, adiciona um filtro para buscar clientes cujo nome contenha a string fornecida (case-insensitive)
     if nome_cliente:
@@ -56,23 +53,61 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     # se a consulta não retornar nenhum cliente, lança uma exceção HTTP 400 com uma mensagem de erro
     if not clientes:
         raise HTTPException(status_code=400, detail="Não foram encontrados clientes para a referida empresa (empresa_id)")
-    # cada linha é uma tupla na ordem dos campos selecionados; empacotamos em dicionários
-    resultado = [
-        {
-            "nome_pessoa": nome_pessoa,
-            "limite_credito": limite_credito,
-            "logradouro": logradouro,
-            "numero": numero,
-            "complemento": complemento,
-            "cep": cep,
-            "ponto_referencia": ponto_referencia,
-            "bairro": bairro,
-            "cidade": cidade,
-            "uf": uf,
-            "contato": contato
-        }
-        for nome_pessoa, limite_credito, logradouro, numero, complemento, 
-            cep, ponto_referencia, bairro, cidade, uf, contato 
-            in clientes
-    ]
-    return resultado
+
+    return clientes
+
+@client_router.get("/listar/informacoes_perfil/{empresa_id}/{pessoa_id}", response_model=visualizarPerfilClienteSchema)
+async def obter_informacoes_perfil_clientes(empresa_id: int, pessoa_id: int, session: Session = Depends(pegar_sessao)):
+
+    cliente_query = (
+        session.query(
+            Pessoas.nome,
+            Pessoas.qtd_dupl_pagas,
+            Pessoas.qtd_dupl_atrasadas,
+            Pessoas.qtd_dupl_avencer,
+            Pessoas.total_pago,
+            Pessoas.total_atrasado,
+            Pessoas.total_avencer,
+            Pessoas.dias_maior_atraso,
+            Pessoas.dias_maior_avencer,
+            Pessoas.limite_credito,
+        )
+        .filter(Pessoas.empresa_id == empresa_id, 
+                Pessoas.id == pessoa_id)
+    ).first()
+
+    # se a consulta não retornar nenhum cliente, lança uma exceção HTTP 400 com uma mensagem de erro
+    if not cliente_query:
+        raise HTTPException(status_code=400, detail="Cliente não encontrado para a referida empresa (empresa_id) e pessoa_id")
+    
+    telefones_query = (
+        session.query(PessoaContatos.contato)
+        .filter(PessoaContatos.empresa_id == empresa_id, 
+                PessoaContatos.pessoa_id == pessoa_id)
+        .order_by(PessoaContatos.sequencia) # ordena os contatos pela sequência para garantir que o contato principal (sequencia 1) venha primeiro
+        .all()
+    )
+
+    enderecos_query = (
+        session.query(
+            Enderecos.logradouro,
+            Enderecos.numero,
+            Enderecos.complemento,
+            Enderecos.cep,
+            Enderecos.ponto_referencia,
+            Bairros.nome.label("bairro"),
+            Cidades.nome.label("cidade"),
+            Cidades.uf
+        )
+        .outerjoin(Bairros, Bairros.id == Enderecos.bairro_id)
+        .outerjoin(Cidades, Cidades.id == Enderecos.cidade_id)
+        .filter(Enderecos.pessoa_id == pessoa_id)
+        .order_by(Enderecos.sequencia) # ordena os endereços pela sequência para garantir que o endereço principal (sequencia 1) venha primeiro
+        .all()
+    )
+
+    return {
+        **cliente_query._asdict(),
+        "telefones": telefones_query,
+        "enderecos": enderecos_query
+    }
