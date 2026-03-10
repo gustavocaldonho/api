@@ -5,7 +5,7 @@ from models.bairros import Bairros
 from models.cidades import Cidades
 from models.pessoa_contatos import PessoaContatos
 from dependecies import pegar_sessao, verificar_token
-from schemas.people_schemas import VisualizarClientesSchema
+from schemas.client_schemas import VisualizarClientesSchema, visualizarPerfilClienteSchema
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -76,3 +76,58 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
             in clientes
     ]
     return resultado
+
+@client_router.get("/listar/informacoes_perfil/{empresa_id}/{pessoa_id}", response_model=visualizarPerfilClienteSchema)
+async def obter_informacoes_perfil_clientes(empresa_id: int, pessoa_id: int, session: Session = Depends(pegar_sessao)):
+
+    cliente_query = (
+        session.query(
+            Pessoas.nome,
+            Pessoas.qtd_dupl_pagas,
+            Pessoas.qtd_dupl_atrasadas,
+            Pessoas.qtd_dupl_avencer,
+            Pessoas.total_pago,
+            Pessoas.total_atrasado,
+            Pessoas.total_avencer,
+            Pessoas.dias_maior_atraso,
+            Pessoas.dias_maior_avencer,
+            Pessoas.limite_credito,
+        )
+        .filter(Pessoas.empresa_id == empresa_id, 
+                Pessoas.id == pessoa_id)
+    ).first()
+
+    # se a consulta não retornar nenhum cliente, lança uma exceção HTTP 400 com uma mensagem de erro
+    if not cliente_query:
+        raise HTTPException(status_code=400, detail="Cliente não encontrado para a referida empresa (empresa_id) e pessoa_id")
+    
+    telefones_query = (
+        session.query(PessoaContatos.contato)
+        .filter(PessoaContatos.empresa_id == empresa_id, 
+                PessoaContatos.pessoa_id == pessoa_id)
+        .order_by(PessoaContatos.sequencia) # ordena os contatos pela sequência para garantir que o contato principal (sequencia 1) venha primeiro
+        .all()
+    )
+
+    enderecos_query = (
+        session.query(
+            Bairros.nome.label("bairro"),
+            Cidades.nome.label("cidade"),
+            Cidades.uf,
+            Enderecos.logradouro,
+            Enderecos.numero,
+            Enderecos.complemento,
+            Enderecos.cep,
+            Enderecos.ponto_referencia
+        )
+        .join(Bairros, Bairros.id == Enderecos.bairro_id)
+        .join(Cidades, Cidades.id == Enderecos.cidade_id)
+        .filter(Enderecos.pessoa_id == pessoa_id)
+        .all()
+    )
+
+    return {
+        **cliente_query._asdict(),
+        "telefones": telefones_query,
+        "enderecos": enderecos_query
+    }
