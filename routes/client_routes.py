@@ -51,10 +51,12 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     
     # se o nome do cliente não for fornecido, a consulta retornará todos os clientes da empresa ordenados por nome, paginados de acordo com os parâmetros 'page' e 'size'
     clientes = clientes_query.order_by(Pessoas.nome).offset(skip).limit(size).all()
+    
     # se a consulta não retornar nenhum cliente, lança uma exceção HTTP 400 com uma mensagem de erro
-    if not clientes:
-        raise HTTPException(status_code=400, detail="Não foram encontrados clientes para a referida empresa (empresa_id)")
+    # if not clientes:
+    #     raise HTTPException(status_code=400, detail="Não foram encontrados clientes para a referida empresa (empresa_id)")
 
+    # se não forem achado cliente, retoanr uma lista vazia ao invés de lançar uma exceção, para facilitar o tratamento no frontend
     return clientes
 
 @client_router.get("/listar/informacoes_perfil/{empresa_id}/{pessoa_id}", response_model=visualizarPerfilClienteSchema)
