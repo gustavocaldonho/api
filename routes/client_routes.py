@@ -12,7 +12,7 @@ from typing import List
 client_router = APIRouter(prefix="/clientes", tags=["clientes"])
 
 @client_router.get("/listar/{empresa_id}", response_model=List[visualizarResumoClienteSchema])
-async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None, min_length=3, max_length=50), 
+async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None, max_length=50), 
                           page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=100), 
                           session: Session = Depends(pegar_sessao)):
     # usuario: Usuarios_Integra = Depends(verificar_token)
@@ -46,9 +46,10 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
         .filter(Enderecos.sequencia == 1) # garante que pegue apenas o endereço principal (sequencia 1)
     )
     # se o nome do cliente for fornecido, adiciona um filtro para buscar clientes cujo nome contenha a string fornecida (case-insensitive)
-    if nome_cliente:
+    if nome_cliente and nome_cliente.strip():
         clientes_query = clientes_query.filter(Pessoas.nome.ilike(f"%{nome_cliente}%"))
-    # aplica ordenação, paginação e executa a query
+    
+    # se o nome do cliente não for fornecido, a consulta retornará todos os clientes da empresa ordenados por nome, paginados de acordo com os parâmetros 'page' e 'size'
     clientes = clientes_query.order_by(Pessoas.nome).offset(skip).limit(size).all()
     # se a consulta não retornar nenhum cliente, lança uma exceção HTTP 400 com uma mensagem de erro
     if not clientes:
