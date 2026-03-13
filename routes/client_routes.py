@@ -25,9 +25,12 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     try:
         page = int(page)
         if page < 1:
-            page = 1
+            page = 0
     except (TypeError, ValueError):
-        page = 1
+        page = 0
+
+    # o flutterflow envia a página iniciando em 0, mas para o cálculo do skip é necessário que a página inicie em 1, por isso é necessário adicionar 1 à página recebida como parâmetro
+    page += 1
 
     skip = (page-1)*size
 
