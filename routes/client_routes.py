@@ -14,7 +14,7 @@ client_router = APIRouter(prefix="/clientes", tags=["clientes"])
 
 @client_router.get("/listar/{empresa_id}", response_model=List[visualizarResumoClienteSchema])
 async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None, max_length=50), 
-                          page: int = 1, size: int = 10, 
+                          page: int = 0, size: int = 10, 
                           session: Session = Depends(pegar_sessao)):
     # usuario: Usuarios_Integra = Depends(verificar_token)
     # Query(valor_padrao, greater_or_equal 'ge' (maior ou igual), less_than_or_equal 'le' (menor ou igual))
