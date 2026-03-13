@@ -8,6 +8,7 @@ from dependecies import pegar_sessao, verificar_token
 from schemas.client_schemas import visualizarPerfilClienteSchema, visualizarResumoClienteSchema
 from sqlalchemy.orm import Session
 from typing import List
+from utils.utils import get_skip
 
 client_router = APIRouter(prefix="/clientes", tags=["clientes"])
 
@@ -22,17 +23,7 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     #if not usuario.consultar_pessoas:
     #    raise HTTPException(status_code=401, detail="Você não tem autorização para consultar os clientes")
 
-    try:
-        page = int(page)
-        if page < 1:
-            page = 0
-    except (TypeError, ValueError):
-        page = 0
-
-    # o flutterflow envia a página iniciando em 0, mas para o cálculo do skip é necessário que a página inicie em 1, por isso é necessário adicionar 1 à página recebida como parâmetro
-    page += 1
-
-    skip = (page-1)*size
+    skip = get_skip(page, size)
 
     # construir a query única com joins e filtros aplicados
     clientes_query = (

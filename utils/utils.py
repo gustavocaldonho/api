@@ -34,3 +34,20 @@ def calc_total(itens: list) -> decimal.Decimal:
     for r in itens:
         total += r.valor
     return total
+
+def get_skip(page: int, size: int) -> int:
+    try:
+        page = int(page)
+        if page < 1:
+            page = 0
+    except (TypeError, ValueError):
+        page = 0
+
+    try:
+        size = int(size)
+        if size < 1:
+            size = 10
+    except (TypeError, ValueError):
+        size = 10
+
+    return page*size
