@@ -13,7 +13,7 @@ client_router = APIRouter(prefix="/clientes", tags=["clientes"])
 
 @client_router.get("/listar/{empresa_id}", response_model=List[visualizarResumoClienteSchema])
 async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None, max_length=50), 
-                          page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=100), 
+                          page: int = 1, size: int = 10, 
                           session: Session = Depends(pegar_sessao)):
     # usuario: Usuarios_Integra = Depends(verificar_token)
     # Query(valor_padrao, greater_or_equal 'ge' (maior ou igual), less_than_or_equal 'le' (menor ou igual))
@@ -21,7 +21,14 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
     # verifica se o usuário (vendedor) possui autorização para consultar os dados dos clientes
     #if not usuario.consultar_pessoas:
     #    raise HTTPException(status_code=401, detail="Você não tem autorização para consultar os clientes")
-    
+
+    try:
+        page = int(page)
+        if page < 1:
+            page = 1
+    except (TypeError, ValueError):
+        page = 1
+
     skip = (page-1)*size
 
     # construir a query única com joins e filtros aplicados
