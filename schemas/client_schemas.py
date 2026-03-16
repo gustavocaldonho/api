@@ -45,6 +45,7 @@ class visualizarPerfilClienteSchema(BaseModel):
     total_pago: Decimal
     total_atrasado: Decimal
     total_avencer: Decimal
+    total_aberto: Decimal
     dias_maior_atraso: Decimal
     dias_maior_avencer: Decimal
     telefones: List[telefoneSchema]

@@ -72,6 +72,7 @@ async def obter_informacoes_perfil_clientes(empresa_id: int, pessoa_id: int, ses
             Pessoas.total_pago,
             Pessoas.total_atrasado,
             Pessoas.total_avencer,
+            (Pessoas.total_atrasado + Pessoas.total_avencer).label("total_aberto"),
             Pessoas.dias_maior_atraso,
             Pessoas.dias_maior_avencer,
             Pessoas.limite_credito,
