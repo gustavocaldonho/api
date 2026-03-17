@@ -14,8 +14,8 @@ receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 )
 async def listar_recebimentos(
     empresa_id: int,
-    data_inicial: str = Query(..., description="Data inicial (YYYY-MM-DD)"),
-    data_final: str = Query(..., description="Data final (YYYY-MM-DD)"),
+    data_inicial: str,
+    data_final: str,
     page: int = 0,
     size: int = 10,
     session: Session = Depends(pegar_sessao)
