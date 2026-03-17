@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
 from models.recebimentos import Recebimentos
+from utils.utils import get_skip
 
 receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 
@@ -15,8 +16,8 @@ async def listar_recebimentos(
     empresa_id: int,
     data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
     data_final: date = Query(..., description="Data final (YYYY-MM-DD)"),
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100),
+    page: int = 0,
+    size: int = 10,
     session: Session = Depends(pegar_sessao)
 ):
     recebimentos = (
@@ -31,11 +32,11 @@ async def listar_recebimentos(
         .order_by(Recebimentos.data_movimento)
         .all()
     )
-    if not recebimentos:
-        raise HTTPException(
-            status_code=400,
-            detail="Não foram encontrados recebimentos para a referida empresa (empresa_id) no período especificado"
-        )
+    # if not recebimentos:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Não foram encontrados recebimentos para a referida empresa (empresa_id) no período especificado"
+    #     )
     # agrupar por data
     resultado = {}
     for r in recebimentos:
@@ -56,7 +57,7 @@ async def listar_recebimentos(
     # total do período
     total_periodo = sum(d["total_dia"] for d in lista_recebimentos)
     # paginação
-    inicio = (page - 1) * size
+    inicio = get_skip(page, size)
     fim = inicio + size
     query_paginada = lista_recebimentos[inicio:fim]
 

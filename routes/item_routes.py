@@ -13,8 +13,8 @@ async def listar_itens(empresa_id: int, estoque_positivo: bool = Query(False),
                        nome_item: str | None = Query(None, max_length=50), 
                        page: int = 0, size: int = 10, 
                        session: Session = Depends(pegar_sessao)):   
+    
     skip = get_skip(page, size)
-
     # aplica o filtro para buscar itens da empresa especificada
     itens_query = (session.query(Itens).filter(Itens.empresa_id == empresa_id))
     # se o vender ativar a opção 'estoque_positivo', adiciona um filtro para buscar apenas itens cujo estoque seja maior que zero
