@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
 from models.recebimentos import Recebimentos
-from utils.utils import get_skip
+from utils.utils import get_skip, converter_data
 
 receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 
@@ -14,12 +14,15 @@ receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 )
 async def listar_recebimentos(
     empresa_id: int,
-    data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
-    data_final: date = Query(..., description="Data final (YYYY-MM-DD)"),
+    data_inicial: str = Query(..., description="Data inicial (YYYY-MM-DD)"),
+    data_final: str = Query(..., description="Data final (YYYY-MM-DD)"),
     page: int = 0,
     size: int = 10,
     session: Session = Depends(pegar_sessao)
 ):
+    new_data_inicial = converter_data(data_inicial)
+    new_data_final = converter_data(data_final)
+
     recebimentos = (
         session.query(
             Recebimentos.data_movimento,
@@ -27,7 +30,7 @@ async def listar_recebimentos(
             func.sum(Recebimentos.valor).label("total_tipo")
         )
         .filter(Recebimentos.empresa_id == empresa_id)
-        .filter(Recebimentos.data_movimento.between(data_inicial, data_final))
+        .filter(Recebimentos.data_movimento.between(new_data_inicial, new_data_final))
         .group_by(Recebimentos.data_movimento, Recebimentos.nome)
         .order_by(Recebimentos.data_movimento)
         .all()
