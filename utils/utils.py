@@ -1,5 +1,7 @@
 import decimal
 import re
+from datetime import date, datetime
+
 
 def limpar_cnpj(cnpj: str) -> str:
     """
@@ -51,3 +53,15 @@ def get_skip(page: int, size: int) -> int:
         size = 10
 
     return page*size
+
+def converter_data(data_str: str | None) -> date | None:
+    if not data_str:
+        return None
+
+    for formato in ("%d/%m/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(data_str, formato).date()
+        except ValueError:
+            continue
+
+    raise ValueError(f"Formato de data inválido: {data_str}")
