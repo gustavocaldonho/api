@@ -35,6 +35,7 @@ async def listar_recebimentos(
         .order_by(Recebimentos.data_movimento)
         .all()
     )
+    # O FLUTTERFLOW NÃO TRATA O ERRO, LOGO, DEVE SER PASSADO LISTA VAZIA PARA # O FRONTEND, CASO NÃO HAJA RECEBIMENTOS ENCONTRADOS
     # if not recebimentos:
     #     raise HTTPException(
     #         status_code=400,
