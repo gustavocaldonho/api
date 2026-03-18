@@ -91,7 +91,7 @@ async def total_periodo_recebimentos(
         .scalar()
     )
 
-    valor_formatado = formatar_decimal(total_periodo)
+    # valor_formatado = formatar_decimal(total_periodo)
     return {
-        "total_periodo": valor_formatado
+        "total_periodo": total_periodo
     }
