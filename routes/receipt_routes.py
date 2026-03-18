@@ -91,4 +91,4 @@ async def total_periodo_recebimentos(
         .scalar()
     )
 
-    return total_periodo
+    return {"total_periodo": total_periodo}
