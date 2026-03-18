@@ -68,3 +68,27 @@ async def listar_recebimentos(
         "total_periodo": total_periodo,
         "recebimentos": query_paginada
     }
+
+
+@receipt_router.get(
+    "/total_periodo/{empresa_id}"
+)
+async def total_periodo_recebimentos(
+    empresa_id: int,
+    data_inicial: str,
+    data_final: str,
+    session: Session = Depends(pegar_sessao)
+):
+    new_data_inicial = converter_data(data_inicial)
+    new_data_final = converter_data(data_final)
+
+    total_periodo = (
+        session.query(
+            func.coalesce(func.sum(Recebimentos.valor), 0)
+        )
+        .filter(Recebimentos.empresa_id == empresa_id)
+        .filter(Recebimentos.data_movimento.between(new_data_inicial, new_data_final))
+        .scalar()
+    )
+
+    return total_periodo
