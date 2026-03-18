@@ -65,3 +65,10 @@ def converter_data(data_str: str | None) -> date | None:
             continue
 
     raise ValueError(f"Formato de data inválido: {data_str}")
+
+def formatar_decimal(valor: decimal.Decimal) -> str:
+    valor_formatado = format(valor, ",.2f") \
+        .replace(",", "X") \
+        .replace(".", ",") \
+        .replace("X", ".")
+    return valor_formatado
