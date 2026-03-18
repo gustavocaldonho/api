@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 from dependecies import pegar_sessao
 from models.recebimentos import Recebimentos
-from utils.utils import get_skip, converter_data
+from utils.utils import formatar_decimal, get_skip, converter_data
 
 receipt_router = APIRouter(prefix="/recebimentos", tags=["recebimentos"])
 
@@ -91,7 +91,7 @@ async def total_periodo_recebimentos(
         .scalar()
     )
 
-    if total_periodo == 0:
-        total_periodo = 10.11
-
-    return {"total_periodo": total_periodo}
+    valor_formatado = formatar_decimal(total_periodo)
+    return {
+        "total_periodo": valor_formatado
+    }
