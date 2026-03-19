@@ -181,9 +181,9 @@ async def listar_faturamentos_condicao_pagamento(
     }
 
 @revenue_router.get(
-    "/total/diario/{empresa_id}",
+    "/total_periodo/{empresa_id}",
 )
-async def total_faturamentos_diario(
+async def total_faturamentos(
     empresa_id: int,
     data_inicial: str,
     data_final: str,
@@ -195,86 +195,14 @@ async def total_faturamentos_diario(
     # agrupando por data_movimento e somando o valor
     faturamentos = (
         session.query(
-            Faturamentos.data_movimento,
             func.sum(Faturamentos.valor_total).label("total_dia")
         )
         .filter(Faturamentos.empresa_id == empresa_id)
         .filter(Faturamentos.data_movimento.between(new_data_inicial, new_data_final))
-        .group_by(Faturamentos.data_movimento)
-        .order_by(Faturamentos.data_movimento)
         .all()
     )
 
     total_periodo = sum(r.total_dia for r in faturamentos) if faturamentos else 0
-
-    return {
-        "total_periodo": total_periodo
-    }
-
-@revenue_router.get(
-    "/total/vendedor/{empresa_id}",
-)
-async def total_faturamentos_vendedor(
-    empresa_id: int,
-    data_inicial: str,
-    data_final: str,
-    session: Session = Depends(pegar_sessao)
-):
-    new_data_inicial = converter_data(data_inicial)
-    new_data_final = converter_data(data_final)
-
-    # agrupando por vendedor e somando o valor
-    total = func.sum(Faturamentos.valor_total).label("total_vendedor")
-    faturamentos = (
-        session.query(
-            Faturamentos.vendedor_id,
-            Usuarios_Integra.usuario,
-            total,
-        )
-        .join(Usuarios_Integra, Faturamentos.vendedor_id == Usuarios_Integra.vendedor_id)
-        .filter(Faturamentos.empresa_id == empresa_id)
-        .filter(Faturamentos.data_movimento.between(new_data_inicial, new_data_final))
-        .group_by(Faturamentos.vendedor_id, Usuarios_Integra.usuario)
-        .order_by(total.desc())
-        .all()
-    )
-
-    total_periodo = sum(r.total_vendedor for r in faturamentos) if faturamentos else 0
-
-    return {
-        "total_periodo": total_periodo
-    }
-
-@revenue_router.get(
-    "/total/condicao_pagamento/{empresa_id}",
-)
-async def total_faturamentos_condicao_pagamento(
-    empresa_id: int,
-    data_inicial: str,
-    data_final: str,
-    session: Session = Depends(pegar_sessao)
-):
-    new_data_inicial = converter_data(data_inicial)
-    new_data_final = converter_data(data_final)
-
-    # agrupando por condicao_pagamento e somando o valor
-    total = func.sum(Faturamentos.valor_total).label("total")
-    faturamentos = (
-        session.query(
-            Faturamentos.condicao_pagamento_id,
-            CondicoesPagamentos.nome,
-            total,
-        )
-        .join(CondicoesPagamentos, Faturamentos.condicao_pagamento_id == CondicoesPagamentos.id)
-        .filter(Faturamentos.empresa_id == empresa_id)
-        .filter(CondicoesPagamentos.empresa_id == empresa_id)
-        .filter(Faturamentos.data_movimento.between(new_data_inicial, new_data_final))
-        .group_by(Faturamentos.condicao_pagamento_id, CondicoesPagamentos.nome)
-        .order_by(total.desc())
-        .all()
-    )
-
-    total_periodo = sum(r.total for r in faturamentos) if faturamentos else 0
 
     return {
         "total_periodo": total_periodo
