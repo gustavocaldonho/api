@@ -72,3 +72,21 @@ def formatar_decimal(valor: decimal.Decimal) -> str:
         .replace(".", ",") \
         .replace("X", ".")
     return valor_formatado
+
+def obter_dia_semana(data: date) -> str:
+    """
+    Retorna o nome do dia da semana em português.
+    
+    Exemplo:
+    date(2026, 3, 19) -> "Quinta"
+    """
+    dias_semana = {
+        'Monday': 'Segunda-feira',
+        'Tuesday': 'Terça-feira',
+        'Wednesday': 'Quarta-feira',
+        'Thursday': 'Quinta-feira',
+        'Friday': 'Sexta-feira',
+        'Saturday': 'Sábado',
+        'Sunday': 'Domingo'
+    }
+    return dias_semana[data.strftime('%A')]
