@@ -54,9 +54,9 @@ async def listar_faturamentos_diario(
         dia_semana = obter_dia_semana(r.data_movimento)
         dados.append(
             {
-                "data_movimento": r.data_movimento,
-                "dia_semana": dia_semana,
-                "total_dia": r.total_dia,
+                "titulo": r.data_movimento,
+                "sub_titulo": dia_semana,
+                "total": r.total_dia,
                 "porcentagem": porcentagem
             }
         )
@@ -111,9 +111,9 @@ async def listar_faturamentos_vendedor(
         porcentagem = ((r.total_vendedor / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         dados.append(
             {
-                "vendedor_id": r.vendedor_id,
-                "usuario": r.usuario,
-                "total_vendedor": r.total_vendedor,
+                # "id": r.vendedor_id,
+                "titulo": r.usuario,
+                "total": r.total_vendedor,
                 "porcentagem": porcentagem
             }
         )
@@ -169,8 +169,8 @@ async def listar_faturamentos_condicao_pagamento(
         porcentagem = ((r.total / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         dados.append(
             {
-                "condicao_pagamento_id": r.condicao_pagamento_id,
-                "nome": r.nome,
+                # "id": r.condicao_pagamento_id,
+                "titulo": r.nome,
                 "total": r.total,
                 "porcentagem": porcentagem
             }
