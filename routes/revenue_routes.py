@@ -192,17 +192,14 @@ async def total_faturamentos(
     new_data_inicial = converter_data(data_inicial)
     new_data_final = converter_data(data_final)
 
-    # agrupando por data_movimento e somando o valor
-    faturamentos = (
+    total_periodo = (
         session.query(
             func.sum(Faturamentos.valor_total).label("total_dia")
         )
         .filter(Faturamentos.empresa_id == empresa_id)
         .filter(Faturamentos.data_movimento.between(new_data_inicial, new_data_final))
-        .all()
+        .scalar()
     )
-
-    total_periodo = sum(r.total_dia for r in faturamentos) if faturamentos else 0
 
     return {
         "total_periodo": total_periodo
