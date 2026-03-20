@@ -83,6 +83,7 @@ async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sess
         access_token = criar_token(usuario.vendedor_id)
         refresh_token = criar_token(usuario.vendedor_id, duracao_token=timedelta(days=7))
         return {
+            "vendedor_id": usuario.vendedor_id, # tirar esse campo depois, pois o vendedor_id pode ser decodificado a partir do token.token para acessar as rotas protegidas. O
             "access_token": access_token,
             "refresh_token": refresh_token, # apos 7 dias pede email e senha de novo
             "token_type": "Bearer"
