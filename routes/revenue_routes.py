@@ -111,8 +111,8 @@ async def listar_faturamentos_vendedor(
         porcentagem = ((r.total_vendedor / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         dados.append(
             {
-                # "id": r.vendedor_id,
                 "titulo": r.usuario,
+                "sub_titulo": r.vendedor_id,
                 "total": r.total_vendedor,
                 "porcentagem": porcentagem
             }
@@ -169,8 +169,8 @@ async def listar_faturamentos_condicao_pagamento(
         porcentagem = ((r.total / total_periodo) * 100 if total_periodo else Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         dados.append(
             {
-                # "id": r.condicao_pagamento_id,
                 "titulo": r.nome,
+                "sub_titulo": r.condicao_pagamento_id,
                 "total": r.total,
                 "porcentagem": porcentagem
             }
