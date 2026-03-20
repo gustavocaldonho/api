@@ -21,7 +21,7 @@ async def listar_pre_vendas(
     empresa_id: int,
     data_inicial: str,
     data_final: str,
-    vendedor_id: int | None = Query(None),
+    vendedor_id: int = 0,
     page: int = 0,
     size: int = 10,
     session: Session = Depends(pegar_sessao)
@@ -67,7 +67,7 @@ async def listar_pre_vendas(
         )
     )
     # se o usuário for o admin, ele pode ver todas as pré-vendas, caso contrário, ele só vê as pré-vendas associadas ao seu vendedor_id
-    if vendedor_id:
+    if vendedor_id and vendedor_id > 0:
         pre_vendas = pre_vendas.filter(PreVendas.vendedor_id == vendedor_id)
 
     # if not pre_vendas:
@@ -187,7 +187,7 @@ async def total_periodo(
     empresa_id: int,
     data_inicial: str,
     data_final: str,
-    vendedor_id: int | None = Query(None),
+    vendedor_id: int = 0,
     session: Session = Depends(pegar_sessao)
 ):
     new_data_inicial = converter_data(data_inicial)
@@ -209,7 +209,7 @@ async def total_periodo(
         )
     )
 
-    if (vendedor_id):
+    if vendedor_id and vendedor_id > 0:
         total_periodo = total_periodo.filter(PreVendas.vendedor_id == vendedor_id)
     
     total_periodo = total_periodo.scalar() or Decimal(0)
