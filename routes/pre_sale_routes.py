@@ -10,6 +10,7 @@ from models.itens import Itens
 from schemas.pre_sale_schemas import PreVendaCreateSchema
 from sqlalchemy import func
 from decimal import Decimal, ROUND_HALF_UP
+from utils.utils import converter_data, get_skip
 
 pre_sale_router = APIRouter(prefix="/pre_vendas", tags=["pre_vendas"])
 
@@ -18,14 +19,16 @@ pre_sale_router = APIRouter(prefix="/pre_vendas", tags=["pre_vendas"])
 )
 async def listar_pre_vendas(
     empresa_id: int,
+    data_inicial: str,
+    data_final: str,
     vendedor_id: int | None = Query(None),
-    data_inicial: date = Query(..., description="Data inicial (YYYY-MM-DD)"),
-    data_final: date = Query(..., description="Data final (YYYY-MM-DD)"),
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100),
+    page: int = 0,
+    size: int = 10,
     session: Session = Depends(pegar_sessao)
 ):
-    skip = (page - 1) * size
+    new_data_inicial = converter_data(data_inicial)
+    new_data_final = converter_data(data_final)
+    skip = get_skip(page, size)
     pre_vendas = (
         session.query(
             PreVendas.id,
@@ -40,7 +43,7 @@ async def listar_pre_vendas(
         )
         .filter(
             PreVendas.empresa_id == empresa_id,
-            PreVendas.data_movimento.between(data_inicial, data_final)
+            PreVendas.data_movimento.between(new_data_inicial, new_data_final)
         )
         .join(
             CondicoesPagamentos,
@@ -63,19 +66,18 @@ async def listar_pre_vendas(
             PreVendas.empresa_id
         )
     )
-
     # se o usuário for o admin, ele pode ver todas as pré-vendas, caso contrário, ele só vê as pré-vendas associadas ao seu vendedor_id
     if vendedor_id:
         pre_vendas = pre_vendas.filter(PreVendas.vendedor_id == vendedor_id)
 
-    if not pre_vendas:
-        raise HTTPException(
-            status_code=400,
-            detail="Não foram encontradas pré-vendas para a referida empresa no período especificado"
-        )
+    # if not pre_vendas:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Não foram encontradas pré-vendas para a referida empresa no período especificado"
+    #     )
     
     # total do período
-    total_periodo = sum(pv.valor_total for pv in pre_vendas)
+    # total_periodo = sum(pv.valor_total for pv in pre_vendas)
     # paginação
     query_paginada = pre_vendas[skip: skip + size]
     # montando a resposta
@@ -94,9 +96,8 @@ async def listar_pre_vendas(
                 "valor_total": pv.valor_total,  
             }
         )
-
     return {
-        "total_pre_vendas": total_periodo,
+        # "total_pre_vendas": total_periodo,
         "pre_vendas": dados
     }
 
@@ -177,6 +178,44 @@ async def listar_pre_venda_itens(
         "destinatario_id": destinatario_id,
         "destinatario_nome": destinatario_nome,
         "pre_vendas": dados
+    }
+
+@pre_sale_router.get(
+    "/total_periodo/{empresa_id}",
+)
+async def total_periodo(
+    empresa_id: int,
+    data_inicial: str,
+    data_final: str,
+    vendedor_id: int | None = Query(None),
+    session: Session = Depends(pegar_sessao)
+):
+    new_data_inicial = converter_data(data_inicial)
+    new_data_final = converter_data(data_final)
+    
+    total_periodo = (
+        session.query(
+            func.sum(PreVendaItens.valor_venda * PreVendaItens.quantidade).label("valor_total")
+        )
+        .select_from(PreVendas)
+        .join(
+            PreVendaItens,
+            (PreVendaItens.pre_venda_id == PreVendas.id) &
+            (PreVendaItens.empresa_id == PreVendas.empresa_id)
+        )
+        .filter(
+            PreVendas.empresa_id == empresa_id,
+            PreVendas.data_movimento.between(new_data_inicial, new_data_final)
+        )
+    )
+
+    if (vendedor_id):
+        total_periodo = total_periodo.filter(PreVendas.vendedor_id == vendedor_id)
+    
+    total_periodo = total_periodo.scalar() or Decimal(0)
+
+    return {
+        "total_periodo": total_periodo
     }
 
 @pre_sale_router.post("/inserir")
