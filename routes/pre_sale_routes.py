@@ -106,11 +106,14 @@ async def listar_pre_vendas(
 )
 async def listar_pre_venda_itens(
     pre_venda_id: int,
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100),
+    page: int = 0,
+    size: int = 10,
     session: Session = Depends(pegar_sessao)
 ):
-    skip = (page - 1) * size
+    if not pre_venda_id or pre_venda_id <= 0:
+        return {}
+
+    skip = get_skip(page, size)
     pre_vendas_itens = (
         session.query(
             PreVendas.destinatario_id,
@@ -142,12 +145,6 @@ async def listar_pre_venda_itens(
         )
         .order_by(PreVendaItens.sequencia)
     )
-
-    if not pre_vendas_itens:
-        raise HTTPException(
-            status_code=400,
-            detail="Não foram encontradas itens para a referida pré-venda"
-        )
     
     # paginação
     query_paginada = pre_vendas_itens[skip: skip + size]
