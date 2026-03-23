@@ -39,7 +39,8 @@ async def listar_pre_vendas(
             PreVendas.enviado,
             PreVendas.qtd_vezes,
             PreVendas.empresa_id,
-            func.sum(PreVendaItens.valor_venda * PreVendaItens.quantidade).label("valor_total")
+            func.sum(PreVendaItens.valor_venda * PreVendaItens.quantidade).label("valor_total"),
+            func.count(PreVendaItens.item_id).label("qtd_itens")
         )
         .filter(
             PreVendas.empresa_id == empresa_id,
@@ -94,6 +95,7 @@ async def listar_pre_vendas(
                 "qtd_vezes": pv.qtd_vezes,
                 "empresa_id": pv.empresa_id,
                 "valor_total": pv.valor_total,  
+                "qtd_itens": pv.qtd_itens
             }
         )
     return {
@@ -174,7 +176,7 @@ async def listar_pre_venda_itens(
     return {
         "destinatario_id": destinatario_id,
         "destinatario_nome": destinatario_nome,
-        "pre_vendas": dados
+        "itens": dados
     }
 
 @pre_sale_router.get(
