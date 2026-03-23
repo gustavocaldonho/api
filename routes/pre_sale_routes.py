@@ -186,13 +186,6 @@ async def obter_destinatario(
     pre_venda_id: int,
     session: Session = Depends(pegar_sessao)
 ):
-    if not pre_venda_id or pre_venda_id <= 0:
-        return {}
-
-    pre_venda = session.query(PreVendas).filter(PreVendas.id == pre_venda_id).first()
-    if not pre_venda:
-        return {}
-    
     destinatario = (
         session.query(
             PreVendas.destinatario_id.label("id"),
@@ -200,12 +193,15 @@ async def obter_destinatario(
         )
         .join(
             Pessoas,
-            (Pessoas.id == PreVendas.destinatario_id)
+            Pessoas.id == PreVendas.destinatario_id
         )
         .filter(
             PreVendas.id == pre_venda_id,
         )
     ).first()
+
+    if not destinatario:
+        return {}
 
     return {
         "destinatario_id": destinatario.id,
