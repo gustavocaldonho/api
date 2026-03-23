@@ -150,6 +150,10 @@ async def listar_pre_venda_itens(
     
     # paginação
     query_paginada = pre_vendas_itens[skip: skip + size]
+
+    destinatario_id = 0
+    destinatario_nome = ''
+    
     # montando a resposta
     dados = []
     for pvi in query_paginada:
