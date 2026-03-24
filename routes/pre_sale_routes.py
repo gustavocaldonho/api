@@ -46,12 +46,14 @@ async def listar_pre_vendas(
             PreVendas.empresa_id == empresa_id,
             PreVendas.data_movimento.between(new_data_inicial, new_data_final)
         )
-        .join(
+        # REMOVER O << OUTERJOIN >>, POIS A CONDIÇÃO DE PAGAMENTO É OBRIGATÓRIA NA PRÉ-VENDA, ENTÃO PODEMOS USAR JOIN NORMAL.
+        # DEIXEI SOMENTE PARA TESTE.
+        .outerjoin(
             CondicoesPagamentos,
             (CondicoesPagamentos.id == PreVendas.condicao_pagamento_id) &
             (CondicoesPagamentos.empresa_id == PreVendas.empresa_id)
         )
-        .join(
+        .outerjoin(
             PreVendaItens,
             (PreVendaItens.pre_venda_id == PreVendas.id) &
             (PreVendaItens.empresa_id == PreVendas.empresa_id)
