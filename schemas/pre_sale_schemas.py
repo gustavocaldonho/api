@@ -12,13 +12,13 @@ class VisualizarItensSchema(BaseModel):
     nome_subgrupo: str 
     nome_classe: str 
     sigla: str 
-    preco_custo: Decimal 
-    preco_zero: Decimal 
-    preco_venda: Decimal 
-    preco_promocao: Decimal 
-    preco_pmc: Decimal 
-    saldo_estoque: Decimal 
-    desconto_maximo: Decimal 
+    preco_custo: float
+    preco_zero: float
+    preco_venda: float
+    preco_promocao: float
+    preco_pmc: float
+    saldo_estoque: int
+    desconto_maximo: float
     data_fim_promocao: Optional[date] = None
     data_inicio_promocao: Optional[date] = None
     data_registro: datetime 
@@ -29,10 +29,10 @@ class VisualizarItensSchema(BaseModel):
 class PreVendaItemCreateSchema(BaseModel):
     sequencia: int
     item_id: int
-    quantidade: Decimal
-    valor_venda: Decimal
-    valor_promocao: Decimal
-    valor_desconto: Decimal
+    quantidade: int
+    valor_venda: float
+    valor_promocao: float
+    valor_desconto: float
 
     class Config:
         from_attributes = True
