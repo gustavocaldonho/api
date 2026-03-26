@@ -42,4 +42,12 @@ async def get_item_by_Id(empresa_id: int, idItem: int = 0,
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado")
     
-    return item
+    return {
+        "id": item.id,
+        "nome": item.nome,
+        "preco_venda": item.preco_venda,
+        "quantidade": 1,
+        "descontoPorcentagem": 0,
+        "descontoReais": 0,
+        "total_item": item.preco_venda  # já inicia com 1 unidade
+    }
