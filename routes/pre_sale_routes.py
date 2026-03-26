@@ -214,6 +214,43 @@ async def obter_destinatario(
         "destinatario_nome": destinatario.nome
     }
 
+@pre_sale_router.get(
+    "/condicoes_pagamento/{empresa_id}",
+)
+async def obter_condicoes_pagamento(
+    empresa_id: int,
+    session: Session = Depends(pegar_sessao)
+):
+    condicoes_pagamento = (
+        session.query(
+            CondicoesPagamentos.nome,
+            CondicoesPagamentos.id,
+            CondicoesPagamentos.dias,
+            CondicoesPagamentos.vezes_max,
+        )
+        .filter(
+            CondicoesPagamentos.empresa_id == empresa_id,
+            CondicoesPagamentos.ativo == True
+        )
+    ).all()
+
+    if not condicoes_pagamento:
+        return {}
+    
+    dados = []
+    for cp in condicoes_pagamento:
+        dados.append(
+            {
+                "id": cp.id,
+                "nome": cp.nome,
+                "dias": cp.dias,
+                "vezes_max": cp.vezes_max
+            }
+        )
+
+    return {
+        "condicoes_pagamento": dados
+    }
 
 @pre_sale_router.get(
     "/total_periodo/{empresa_id}",
