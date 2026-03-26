@@ -32,7 +32,7 @@ async def listar_itens(empresa_id: int, estoque_positivo: bool = Query(False),
     # cada linha é uma tupla na ordem dos campos selecionados; empacotamos em dicionários
     return itens
 
-@item_router.get("/{empresa_id}/{idItem}", response_model=Optional[VisualizarItensSchema])
+@item_router.get("/{empresa_id}/{idItem}")
 async def get_item_by_Id(empresa_id: int, idItem: int = 0, 
                        session: Session = Depends(pegar_sessao)):   
     
