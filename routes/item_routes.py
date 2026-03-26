@@ -38,5 +38,8 @@ async def get_item_by_Id(empresa_id: int, idItem: int = 0,
     
     # aplica o filtro para buscar o item específico da empresa especificada
     item = session.query(Itens).filter(Itens.empresa_id == empresa_id, Itens.id == idItem).first()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item não encontrado")
     
     return item
