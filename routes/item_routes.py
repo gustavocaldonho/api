@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List
+from typing import List, Optional
 from models.itens import Itens
 from dependecies import pegar_sessao, verificar_token
 from sqlalchemy.orm import Session
@@ -31,3 +31,12 @@ async def listar_itens(empresa_id: int, estoque_positivo: bool = Query(False),
     #     raise HTTPException(status_code=400, detail="Não foram encontrados itens para a referida empresa (empresa_id)")
     # cada linha é uma tupla na ordem dos campos selecionados; empacotamos em dicionários
     return itens
+
+@item_router.get("/{empresa_id}/{idItem}", response_model=Optional[VisualizarItensSchema])
+async def get_item_by_Id(empresa_id: int, idItem: int = 0, 
+                       session: Session = Depends(pegar_sessao)):   
+    
+    # aplica o filtro para buscar o item específico da empresa especificada
+    item = session.query(Itens).filter(Itens.empresa_id == empresa_id, Itens.id == idItem).first()
+    
+    return item
