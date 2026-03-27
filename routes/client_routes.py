@@ -116,3 +116,15 @@ async def obter_informacoes_perfil_clientes(empresa_id: int, pessoa_id: int, ses
         "telefones": telefones_query,
         "enderecos": enderecos_query
     }
+
+@client_router.get("/{empresa_id}/{idCliente}")
+async def get_cliente_by_Id(empresa_id: int, idCliente: int = 0, 
+                       session: Session = Depends(pegar_sessao)):   
+    
+    # aplica o filtro para buscar o item específico da empresa especificada
+    cliente = session.query(Pessoas).filter(Pessoas.empresa_id == empresa_id, Pessoas.id == idCliente).first()
+
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    
+    return cliente
