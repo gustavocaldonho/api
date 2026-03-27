@@ -323,7 +323,7 @@ async def inserir_pre_venda(
     for item in dados.itens:
 
         valor_item = item.valor_venda * item.quantidade
-        valor_total += valor_item
+        valor_total += Decimal(str(valor_item))
 
         pre_venda_item = PreVendaItens(
             empresa_id=dados.empresa_id,
@@ -387,7 +387,7 @@ async def editar_pre_venda(
     for item in dados.itens:
 
         valor_item = item.valor_venda * item.quantidade
-        valor_total += valor_item
+        valor_total += Decimal(str(valor_item))
 
         novo_item = PreVendaItens(
             empresa_id=empresa_id,
