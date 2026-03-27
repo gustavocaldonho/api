@@ -237,24 +237,16 @@ async def obter_condicoes_pagamento(
     if not condicoes_pagamento:
         return {}
     
-    dadosId = []
-    dadosNome = []
-    dadosCompletos = []
+    dados = []
     for cp in condicoes_pagamento:
-        dadosId.append(cp.id)
-        dadosNome.append(cp.nome)
-        dadosCompletos.append({
+        dados.append({
             "id": cp.id,
             "nome": cp.nome,
             "dias": cp.dias,
             "vezes_max": cp.vezes_max
         })
-
-    return {
-        "ids": dadosId,
-        "nomes": dadosNome,
-        "dados_completos": dadosCompletos
-    }
+    return dados
+    
 
 @pre_sale_router.get(
     "/total_periodo/{empresa_id}",
