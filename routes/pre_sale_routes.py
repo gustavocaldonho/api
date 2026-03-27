@@ -237,19 +237,23 @@ async def obter_condicoes_pagamento(
     if not condicoes_pagamento:
         return {}
     
-    dados = []
+    dadosId = []
+    dadosNome = []
+    dadosCompletos = []
     for cp in condicoes_pagamento:
-        dados.append(
-            {
-                "id": cp.id,
-                "nome": cp.nome,
-                "dias": cp.dias,
-                "vezes_max": cp.vezes_max
-            }
-        )
+        dadosId.append(cp.id)
+        dadosNome.append(cp.nome)
+        dadosCompletos.append({
+            "id": cp.id,
+            "nome": cp.nome,
+            "dias": cp.dias,
+            "vezes_max": cp.vezes_max
+        })
 
     return {
-        "condicoes_pagamento": dados
+        "ids": dadosId,
+        "nomes": dadosNome,
+        "dados_completos": dadosCompletos
     }
 
 @pre_sale_router.get(
