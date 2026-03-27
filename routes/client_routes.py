@@ -44,7 +44,7 @@ async def listar_clientes(empresa_id: int, nome_cliente: str | None = Query(None
         .outerjoin(Bairros, Bairros.id == Enderecos.bairro_id)
         .outerjoin(Cidades, Cidades.id == Enderecos.cidade_id)
         .filter(Pessoas.empresa_id == empresa_id)
-        .filter(Enderecos.sequencia == 1) # garante que pegue apenas o endereço principal (sequencia 1)
+        # .filter(Enderecos.sequencia == 1) # garante que pegue apenas o endereço principal (sequencia 1)
     )
     # se o nome do cliente for fornecido, adiciona um filtro para buscar clientes cujo nome contenha a string fornecida (case-insensitive)
     if nome_cliente and nome_cliente.strip():
